@@ -1,0 +1,25 @@
+CREATE DATABASE tracker;
+USE tracker;
+
+DROP TABLE location_entry;
+CREATE TABLE location_entry(
+    id INT NOT NULL AUTO_INCREMENT,
+    ssid VARCHAR(32) NOT NULL,
+    addr VARCHAR(15) NOT NULL,
+    logged_in BOOLEAN NOT NULL,
+    login_name VARCHAR(16) NOT NULL,
+    lat DECIMAL(10, 8) NOT NULL,
+    lng DECIMAL(11, 8) NOT NULL,
+    PRIMARY KEY (id)
+);
+
+DROP TABLE device;
+CREATE TABLE device(
+    id INT NOT NULL AUTO_INCREMENT,
+    hostname VARCHAR(16) NOT NULL,
+    online BOOLEAN NOT NULL,
+    last_seen TIMESTAMP NOT NULL
+        DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+);

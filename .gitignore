@@ -1,0 +1,6 @@
+go-tracker
+*.swp
+*.swo
+.vim-bookmarks
+vendor/
+glide.lock
