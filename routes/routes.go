@@ -1,17 +1,19 @@
 package routes
 
 import (
-	"fmt"
-	"log"
-	"net/url"
-	//	"encoding/json"
 	"compress/gzip"
+	"encoding/json"
+	"fmt"
 	"io"
+	"log"
 	"net/http"
+	"net/url"
 	"strings"
 
-	//	"github.com/tywkeene/go-tracker/db"
+	"github.com/tywkeene/go-tracker/db"
 	"github.com/tywkeene/go-tracker/utils"
+
+	"github.com/satori/go.uuid"
 )
 
 type gzipResponseWriter struct {
@@ -45,7 +47,7 @@ func LogHttp(r *http.Request) {
 
 //These headers should always be set
 func setDefaultResponseHeaders(response http.ResponseWriter) {
-	response.Header().Set("Connection", "keep-alive")
+	response.Header().Set("Connection", "close")
 	response.Header().Set("Server", "Go Tracker v0.0.0")
 }
 
@@ -74,6 +76,37 @@ func GetQueryValue(name string, w http.ResponseWriter, r *http.Request) (string,
 
 func registerHandle(w http.ResponseWriter, r *http.Request) {
 	LogHttp(r)
+	errHandle := utils.NewHttpErrorHandle("registerHandle", w, r)
+	if validateRequestMethod(errHandle, "POST") == false {
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	var device *db.Device
+	err := decoder.Decode(&device)
+	if errHandle.Handle(err, http.StatusInternalServerError, utils.ErrorActionErr) == true {
+		return
+	}
+
+	if device.Online == false || device.LastSeen == nil {
+		errHandle.Handle(fmt.Errorf("Invalid or empty device struct"), http.StatusBadRequest, utils.ErrorActionErr)
+		return
+	}
+
+	deviceUUID, err := json.MarshalIndent(uuid.NewV4().String(), " ", " ")
+	if errHandle.Handle(err, http.StatusInternalServerError, utils.ErrorActionErr) == true {
+		return
+	}
+
+	err = db.HandleRegister(string(deviceUUID), device)
+	if errHandle.Handle(err, http.StatusUnauthorized, utils.ErrorActionErr) == true {
+		return
+	}
+
+	defer r.Body.Close()
+	w.WriteHeader(http.StatusOK)
+	setDefaultResponseHeaders(w)
+	io.WriteString(w, string(deviceUUID))
 }
 
 func pingHandle(w http.ResponseWriter, r *http.Request) {
@@ -95,11 +128,11 @@ func errorHandle(w http.ResponseWriter, r *http.Request) {
 func RegisterHandles() {
 	http.HandleFunc("/register", registerHandle)
 	http.HandleFunc("/ping", pingHandle)
-	http.HandleFunc("/register_login", loginHandle)
-	http.HandleFunc("/register_logoff", logoffHandle)
-	http.HandleFunc("/register_error", errorHandle)
+	http.HandleFunc("/login", loginHandle)
+	http.HandleFunc("/logoff", logoffHandle)
+	http.HandleFunc("/report_error", errorHandle)
 }
 
 func Launch() {
-	panic(http.ListenAndServe(":8080", nil))
+	panic(http.ListenAndServe("127.0.0.1:8080", nil))
 }
