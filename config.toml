@@ -1,5 +1,7 @@
+bind_addr = "0.0.0.0:8080"
+
 [database]
-    // Default database settings
+    # Default database settings
     addr = "0.0.0.0:3306"
 
     name = "tracker"

@@ -12,3 +12,6 @@ Added database configuration via toml file.
 Added relevent file options/options.go
 Added example config.toml
 Updated .gitignore
+
+## Thu 04 May 2017 11:43:17 PM MDT Version: 0.0.5
+Added bind_addr option to config.toml

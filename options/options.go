@@ -13,7 +13,8 @@ type DB struct {
 }
 
 type Configuration struct {
-	Database *DB `toml:"database"`
+	Bind     string `toml:"bind_addr"`
+	Database *DB    `toml:"database"`
 }
 
 var Config Configuration

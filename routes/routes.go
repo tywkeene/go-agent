@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/tywkeene/go-tracker/db"
+	"github.com/tywkeene/go-tracker/options"
 	"github.com/tywkeene/go-tracker/utils"
 
 	"github.com/satori/go.uuid"
@@ -134,5 +135,6 @@ func RegisterHandles() {
 }
 
 func Launch() {
-	panic(http.ListenAndServe("127.0.0.1:8080", nil))
+	log.Println("Listening on ", options.Config.Bind)
+	panic(http.ListenAndServe(options.Config.Bind, nil))
 }
