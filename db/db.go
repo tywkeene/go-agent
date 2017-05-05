@@ -72,7 +72,7 @@ func HandleError(data []byte)  {}
 
 func Init() error {
 	var err error
-	dbOptions := options.Config.Database
+	dbOptions := options.Config
 	DBConnection, err = sql.Open("mysql", dbOptions.User+":"+dbOptions.Pass+"@tcp("+dbOptions.Addr+")/"+dbOptions.Name)
 	return err
 }
