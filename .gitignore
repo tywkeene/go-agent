@@ -4,3 +4,4 @@ go-tracker
 .vim-bookmarks
 vendor/
 glide.lock
+secret_config.toml

@@ -6,3 +6,9 @@ Fixed DeviceByUuidStmt in db/db.go
 
 ## Thu 04 May 2017 11:12:51 PM MDT Version: 0.0.3
 Removed stale code in main.go
+
+## Thu 04 May 2017 11:39:06 PM MDT Version: 0.0.4
+Added database configuration via toml file.
+Added relevent file options/options.go
+Added example config.toml
+Updated .gitignore

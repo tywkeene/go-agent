@@ -5,6 +5,8 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"time"
+
+	"github.com/tywkeene/go-tracker/options"
 )
 
 type LocationEntry struct {
@@ -70,6 +72,7 @@ func HandleError(data []byte)  {}
 
 func Init() error {
 	var err error
-	DBConnection, err = sql.Open("mysql", "tracker:tracker@tcp(0.0.0.0:3306)/tracker")
+	dbOptions := options.Config.Database
+	DBConnection, err = sql.Open("mysql", dbOptions.User+":"+dbOptions.Pass+"@tcp("+dbOptions.Addr+")/"+dbOptions.Name)
 	return err
 }
