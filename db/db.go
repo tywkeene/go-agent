@@ -31,7 +31,7 @@ var DBConnection *sql.DB
 
 const RegisterStmt = "INSERT INTO devices SET uuid=?,hostname=?,online=?;"
 const DeviceByHostStmt = "SELECT hostname FROM devices WHERE hostname=?;"
-const DeviceByUUIDStmt = "SELECT hostname FROM devices WHERE hostname=?;"
+const DeviceByUUIDStmt = "SELECT uuid FROM devices WHERE uuid=?;"
 
 func RowExists(stmt string, args ...interface{}) (bool, error) {
 	var exists string
