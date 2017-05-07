@@ -23,4 +23,9 @@ func ReadConfig() {
 	if _, err := toml.DecodeFile(*configFile, &Config); err != nil {
 		panic(err)
 	}
+
+	if Config.Addr == "" || Config.Name == "" ||
+		Config.User == "" || Config.Pass == "" {
+		panic("Invalid database configuration")
+	}
 }

@@ -9,6 +9,11 @@ import (
 	"github.com/tywkeene/go-tracker/options"
 )
 
+type DeviceRegister struct {
+	Hostname string `json:"hostname"`
+	AuthStr  string `json:"auth_string"`
+}
+
 type LocationEntry struct {
 	Ssid      string `json:"ssid"`
 	Addr      string `json:"addr"`
@@ -23,6 +28,7 @@ type ClientError struct {
 
 type Device struct {
 	UUID        string           `json:"uuid"`
+	AuthStr     string           `json:"auth_string"`
 	Hostname    string           `json:"hostname"`
 	Online      bool             `json:"online"`
 	LastSeen    *time.Time       `json:"last_seen"`
@@ -31,7 +37,7 @@ type Device struct {
 
 var DBConnection *sql.DB
 
-const RegisterStmt = "INSERT INTO devices SET uuid=?,hostname=?,online=?;"
+const RegisterStmt = "INSERT INTO devices SET uuid=?,auth_string=?,hostname=?,online=?;"
 const DeviceByHostStmt = "SELECT hostname FROM devices WHERE hostname=?;"
 const DeviceByUUIDStmt = "SELECT uuid FROM devices WHERE uuid=?;"
 
@@ -47,7 +53,29 @@ func RowExists(stmt string, args ...interface{}) (bool, error) {
 	return true, nil
 }
 
-func HandleRegister(uuid string, device *Device) error {
+func authorizeDeviceHostName(device *Device) error {
+	exists, err := RowExists(DeviceByHostStmt, device.Hostname)
+	if err != nil {
+		return err
+	}
+	if exists == true {
+		return fmt.Errorf("Device with that hostname already exists")
+	}
+	return nil
+}
+
+func authorizeDeviceUUID(uuid string, device *Device) error {
+	exists, err := RowExists(DeviceByUUIDStmt, device.UUID)
+	if err != nil {
+		return err
+	}
+	if exists == false {
+		return fmt.Errorf("Device with that UUID does not exist")
+	}
+	return nil
+}
+
+func HandleRegister(device *Device) error {
 	exists, err := RowExists(DeviceByHostStmt, device.Hostname)
 	if err != nil {
 		return err
@@ -59,7 +87,7 @@ func HandleRegister(uuid string, device *Device) error {
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(uuid, device.Hostname, true)
+	_, err = stmt.Exec(device.UUID, device.AuthStr, device.Hostname, device.Online)
 	return err
 }
 

@@ -18,3 +18,9 @@ Added bind_addr option to config.toml
 
 ## Fri 05 May 2017 05:19:55 PM MDT Version: 0.0.6
 Make config file just for the database connection
+
+## Sun 07 May 2017 12:34:19 PM MDT Version: 0.0.7
+Added time sensitive one-time authorization for devices
+Updated schema, adding auth_string to tracker.devices
+Fail if any configuration options are nil. (hack for now, fix later)
+

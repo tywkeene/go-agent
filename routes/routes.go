@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/tywkeene/go-tracker/auth"
 	"github.com/tywkeene/go-tracker/db"
 	"github.com/tywkeene/go-tracker/utils"
 
@@ -82,31 +83,44 @@ func registerHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	var device *db.Device
-	err := decoder.Decode(&device)
+	var registerAuth *db.DeviceRegister
+	err := decoder.Decode(&registerAuth)
 	if errHandle.Handle(err, http.StatusInternalServerError, utils.ErrorActionErr) == true {
 		return
 	}
 
-	if device.Online == false || device.LastSeen == nil {
-		errHandle.Handle(fmt.Errorf("Invalid or empty device struct"), http.StatusBadRequest, utils.ErrorActionErr)
-		return
-	}
-
-	deviceUUID, err := json.MarshalIndent(uuid.NewV4().String(), " ", " ")
-	if errHandle.Handle(err, http.StatusInternalServerError, utils.ErrorActionErr) == true {
-		return
-	}
-
-	err = db.HandleRegister(string(deviceUUID), device)
+	err = auth.ValidateRegisterAuth(registerAuth.AuthStr)
 	if errHandle.Handle(err, http.StatusUnauthorized, utils.ErrorActionErr) == true {
 		return
 	}
 
+	uuid, err := json.Marshal(uuid.NewV4().String())
+	if errHandle.Handle(err, http.StatusInternalServerError, utils.ErrorActionErr) == true {
+		return
+	}
+
+	device := &db.Device{
+		UUID:        string(uuid),
+		AuthStr:     registerAuth.AuthStr,
+		Hostname:    registerAuth.Hostname,
+		Online:      true,
+		LastSeen:    nil,
+		LocationLog: nil,
+	}
+
+	err = db.HandleRegister(device)
+	if errHandle.Handle(err, http.StatusUnauthorized, utils.ErrorActionErr) == true {
+		return
+	}
+
+	auth.InvalidateAuth(registerAuth.AuthStr)
+	log.Printf("Hostname '%s' successfully registered (authstr:%s) (uuid:%s)",
+		device.Hostname, registerAuth.AuthStr, device.UUID)
+
 	defer r.Body.Close()
 	w.WriteHeader(http.StatusOK)
 	setDefaultResponseHeaders(w)
-	io.WriteString(w, string(deviceUUID))
+	io.WriteString(w, string(device.UUID))
 }
 
 func pingHandle(w http.ResponseWriter, r *http.Request) {
@@ -115,6 +129,10 @@ func pingHandle(w http.ResponseWriter, r *http.Request) {
 
 func loginHandle(w http.ResponseWriter, r *http.Request) {
 	LogHttp(r)
+	errHandle := utils.NewHttpErrorHandle("registerHandle", w, r)
+	if validateRequestMethod(errHandle, "POST") == false {
+		return
+	}
 }
 
 func logoffHandle(w http.ResponseWriter, r *http.Request) {
