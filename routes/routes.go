@@ -99,9 +99,10 @@ func registerHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	addr := strings.Split(r.RemoteAddr, ":")
 	device := &db.Device{
 		UUID:        string(uuid),
-		Address:     r.RemoteAddr,
+		Address:     addr[0],
 		AuthStr:     registerAuth.AuthStr,
 		Hostname:    registerAuth.Hostname,
 		Online:      true,

@@ -17,7 +17,7 @@ func init() {
 	}
 	log.Printf("Initialized database connection %s...", options.Config.Addr)
 
-	expire, err := time.ParseDuration("5s")
+	expire, err := time.ParseDuration("24h")
 	if err != nil {
 		panic(err)
 	}

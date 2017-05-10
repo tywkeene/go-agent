@@ -30,3 +30,7 @@ Put registration authorizations strings in the database
 ## Tue 09 May 2017 11:08:35 PM MDT Version: 0.0.9
 Added address (ip address of device) to device database table
 Refactored auth string validation to check for valid auth string, expiration and use
+
+## Wed 10 May 2017 12:08:41 PM MDT Version: 0.0.10
+Changed default registration auth expiration to 24h
+Strip port from device ip addr when registering a device
