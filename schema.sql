@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS register_auths(
 CREATE TABLE IF NOT EXISTS devices (
     id INT NOT NULL AUTO_INCREMENT,
     uuid VARCHAR(38) NOT NULL,
+    address VARCHAR(15) NOT NULL,
     auth_string VARCHAR(16) NOT NULL,
     hostname VARCHAR(16) NOT NULL,
     online BOOLEAN NOT NULL,

@@ -26,3 +26,7 @@ Fail if any configuration options are nil. (hack for now, fix later)
 
 ## Tue 09 May 2017 10:40:58 PM MDT Version: 0.0.8
 Put registration authorizations strings in the database
+
+## Tue 09 May 2017 11:08:35 PM MDT Version: 0.0.9
+Added address (ip address of device) to device database table
+Refactored auth string validation to check for valid auth string, expiration and use

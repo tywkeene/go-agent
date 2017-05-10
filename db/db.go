@@ -28,6 +28,7 @@ type ClientError struct {
 
 type Device struct {
 	UUID        string           `json:"uuid"`
+	Address     string           `json:"address"`
 	AuthStr     string           `json:"auth_string"`
 	Hostname    string           `json:"hostname"`
 	Online      bool             `json:"online"`
@@ -37,7 +38,7 @@ type Device struct {
 
 var DBConnection *sql.DB
 
-const RegisterStmt = "INSERT INTO devices SET uuid=?,auth_string=?,hostname=?,online=?;"
+const RegisterStmt = "INSERT INTO devices SET uuid=?,address=?,auth_string=?,hostname=?,online=?;"
 const DeviceByHostStmt = "SELECT hostname FROM devices WHERE hostname=?;"
 const DeviceByUUIDStmt = "SELECT uuid FROM devices WHERE uuid=?;"
 
@@ -87,10 +88,14 @@ func IsAuthValid(authStr string) (bool, error) {
 		return false, err
 	}
 
-	if authStr == str && used == false && (expireTimestamp < time.Now().Unix()) {
-		return true, nil
+	if authStr != str {
+		return false, fmt.Errorf("Unauthorized: Invalid auth string")
+	} else if used == true {
+		return false, fmt.Errorf("Unauthorized: Auth already used")
+	} else if expireTimestamp < time.Now().Unix() {
+		return false, fmt.Errorf("Unauthorized: Auth expired")
 	}
-	return false, nil
+	return true, nil
 }
 
 func SetAuthUsed(authStr string, used bool) error {
@@ -148,7 +153,7 @@ func HandleRegister(device *Device) error {
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(device.UUID, device.AuthStr, device.Hostname, device.Online)
+	_, err = stmt.Exec(device.UUID, device.Address, device.AuthStr, device.Hostname, device.Online)
 	return err
 }
 

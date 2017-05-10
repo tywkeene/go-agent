@@ -101,6 +101,7 @@ func registerHandle(w http.ResponseWriter, r *http.Request) {
 
 	device := &db.Device{
 		UUID:        string(uuid),
+		Address:     r.RemoteAddr,
 		AuthStr:     registerAuth.AuthStr,
 		Hostname:    registerAuth.Hostname,
 		Online:      true,
