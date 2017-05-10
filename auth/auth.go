@@ -2,33 +2,49 @@ package auth
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"time"
+
+	"github.com/tywkeene/go-tracker/db"
 )
 
 type RegisterAuth struct {
-	Str       string
-	Timestamp int64
-	Expire    time.Duration
-	Used      bool
+	Str             string
+	Used            bool
+	Timestamp       int64
+	ExpireTimestamp int64
 }
-
-var validRegisterAuths []*RegisterAuth
 
 const authStrLen = 16
 
-func Init() {
-	validRegisterAuths = make([]*RegisterAuth, 0)
+func Init(num int, expire time.Duration) error {
+	authCount, err := db.GetRegisterAuthCount()
+	if err != nil {
+		return err
+	}
+	if authCount == 0 {
+		log.Printf("Generating %d registration authorizations", num)
+		for i := 0; i < num; i++ {
+			auth := NewRegisterAuth(expire)
+			err := db.InsertRegisterAuth(auth.Str, auth.Used, auth.Timestamp, auth.ExpireTimestamp)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
-func NewRegisterAuth(expire time.Duration) *RegisterAuth {
+func NewRegisterAuth(expireDur time.Duration) *RegisterAuth {
+	timestamp := time.Now().Unix()
+	expire := (int64(expireDur.Seconds()) + timestamp)
 	auth := &RegisterAuth{
-		Str:       generateAuthStr(),
-		Timestamp: time.Now().UnixNano(),
-		Expire:    expire,
-		Used:      false,
+		Str:             generateAuthStr(),
+		Timestamp:       timestamp,
+		ExpireTimestamp: expire,
+		Used:            false,
 	}
-	validRegisterAuths = append(validRegisterAuths, auth)
 	return auth
 }
 
@@ -42,29 +58,13 @@ func generateAuthStr() string {
 	return string(b)
 }
 
-func InvalidateAuth(str string) error {
-	for _, auth := range validRegisterAuths {
-		if auth.Str == str {
-			auth.Used = true
-			return nil
-		}
-	}
-	return fmt.Errorf("Could not find authorization to invalidate")
-}
-
 func ValidateRegisterAuth(authStr string) error {
-	for _, auth := range validRegisterAuths {
-		if auth.Str == authStr {
-			if auth.Used == true {
-				return fmt.Errorf("Invalid device register authorization: already used")
-			}
-			timeSince := time.Unix(0, auth.Timestamp)
-			diff := time.Now().Sub(timeSince)
-			if diff > auth.Expire {
-				return fmt.Errorf("Invalid device register authorization: expired")
-			}
-			return nil
-		}
+	valid, err := db.IsAuthValid(authStr)
+	if err != nil {
+		return err
 	}
-	return fmt.Errorf("Invalid device register authorization: invalid auth string")
+	if valid == false {
+		return fmt.Errorf("Invalid device register authorization: invalid auth string")
+	}
+	return db.SetAuthUsed(authStr, true)
 }

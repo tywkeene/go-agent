@@ -113,7 +113,6 @@ func registerHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	auth.InvalidateAuth(registerAuth.AuthStr)
 	log.Printf("Hostname '%s' successfully registered (authstr:%s) (uuid:%s)",
 		device.Hostname, registerAuth.AuthStr, device.UUID)
 

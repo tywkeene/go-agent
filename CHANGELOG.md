@@ -24,3 +24,5 @@ Added time sensitive one-time authorization for devices
 Updated schema, adding auth_string to tracker.devices
 Fail if any configuration options are nil. (hack for now, fix later)
 
+## Tue 09 May 2017 10:40:58 PM MDT Version: 0.0.8
+Put registration authorizations strings in the database

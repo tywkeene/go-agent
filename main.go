@@ -11,17 +11,19 @@ import (
 
 func init() {
 	options.ReadConfig()
-	expire, err := time.ParseDuration("30s")
-	if err != nil {
-		panic(err)
-	}
-	registerAuth := auth.NewRegisterAuth(expire)
-	log.Println("Generated registration authorization string:", registerAuth.Str)
 	log.Println("Starting tracker server...")
 	if err := db.Init(); err != nil {
 		panic(err)
 	}
 	log.Printf("Initialized database connection %s...", options.Config.Addr)
+
+	expire, err := time.ParseDuration("5s")
+	if err != nil {
+		panic(err)
+	}
+	if err := auth.Init(10, expire); err != nil {
+		panic(err)
+	}
 	routes.RegisterHandles()
 }
 

@@ -41,6 +41,67 @@ const RegisterStmt = "INSERT INTO devices SET uuid=?,auth_string=?,hostname=?,on
 const DeviceByHostStmt = "SELECT hostname FROM devices WHERE hostname=?;"
 const DeviceByUUIDStmt = "SELECT uuid FROM devices WHERE uuid=?;"
 
+const RegisterAuthCount = "SELECT COUNT(*) FROM register_auths;"
+const InsertRegisterAuthStmt = "INSERT INTO register_auths SET auth_string=?,used=?,timestamp=?,expire_timestamp=?;"
+const ValidateRegisterAuthStmt = "SELECT auth_string,used,timestamp,expire_timestamp FROM register_auths WHERE auth_string=?;"
+const SetRegisterAuthUsedStmt = "UPDATE register_auths SET used=? WHERE auth_string=? ;"
+
+func GetRegisterAuthCount() (int, error) {
+	rows, err := DBConnection.Query(RegisterAuthCount)
+	defer rows.Close()
+	if err != nil {
+		return 0, err
+	}
+	rows.Next()
+	var rowCount int
+	err = rows.Scan(&rowCount)
+	if err != nil {
+		return 0, err
+	}
+	return rowCount, nil
+}
+
+func InsertRegisterAuth(str string, used bool, timestamp int64, expire int64) error {
+	stmt, err := DBConnection.Prepare(InsertRegisterAuthStmt)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(str, used, timestamp, expire)
+	if err != nil {
+		return nil
+	}
+	return nil
+}
+
+func IsAuthValid(authStr string) (bool, error) {
+	var str string
+	var used bool
+	var timestamp int64
+	var expireTimestamp int64
+	err := DBConnection.QueryRow(ValidateRegisterAuthStmt,
+		authStr).Scan(&str, &used, &timestamp, &expireTimestamp)
+
+	if err == sql.ErrNoRows {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+
+	if authStr == str && used == false && (expireTimestamp < time.Now().Unix()) {
+		return true, nil
+	}
+	return false, nil
+}
+
+func SetAuthUsed(authStr string, used bool) error {
+	stmt, err := DBConnection.Prepare(SetRegisterAuthUsedStmt)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(used, authStr)
+	return nil
+}
+
 func RowExists(stmt string, args ...interface{}) (bool, error) {
 	var exists string
 	err := DBConnection.QueryRow(stmt, args...).Scan(&exists)

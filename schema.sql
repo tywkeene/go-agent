@@ -1,6 +1,7 @@
 CREATE DATABASE IF NOT EXISTS tracker;
 USE mysql;
-CREATE USER 'tracker'@'localhost' IDENTIFIED BY 'tracker';
+
+CREATE USER IF NOT EXISTS 'tracker'@'localhost' IDENTIFIED BY 'tracker';
 GRANT ALL PRIVILEGES ON tracker . * TO 'tracker'@'localhost';
 USE tracker;
 
@@ -9,6 +10,15 @@ CREATE TABLE IF NOT EXISTS location_entries(
     ssid VARCHAR(32) NOT NULL,
     addr VARCHAR(15) NOT NULL,
     login_name VARCHAR(16) NOT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS register_auths(
+    id INT NOT NULL AUTO_INCREMENT,
+    auth_string VARCHAR(16) NOT NULL,
+    used BOOLEAN NOT NULL,
+    timestamp BIGINT NOT NULL,
+    expire_timestamp BIGINT NOT NULL,
     PRIMARY KEY (id)
 );
 
