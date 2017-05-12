@@ -34,3 +34,6 @@ Refactored auth string validation to check for valid auth string, expiration and
 ## Wed 10 May 2017 12:08:41 PM MDT Version: 0.0.10
 Changed default registration auth expiration to 24h
 Strip port from device ip addr when registering a device
+
+## Thu 11 May 2017 07:42:09 PM MDT Version: 0.0.11
+Make errors returned from db more standardized.

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"log"
 	"time"
 
 	"github.com/tywkeene/go-tracker/options"
@@ -38,6 +39,20 @@ type Device struct {
 
 var DBConnection *sql.DB
 
+// API Errors
+
+var ErrHostnameNotAuthorized = fmt.Errorf("no device with that hostname is registered with this server")
+var ErrUUIDNotAuthorized = fmt.Errorf("no device with that UUID is registered with this server")
+
+var ErrAuthUsed = fmt.Errorf("device authorization already used")
+var ErrAuthExpired = fmt.Errorf("device authorization expired")
+var ErrAuthStringInvalid = fmt.Errorf("invalid device authorization string")
+
+var ErrDeviceWithHostnameExists = fmt.Errorf("a device with that hostname already registered with this server")
+var ErrDeviceWithUUIDExists = fmt.Errorf("a device with that UUID already registered with this server")
+
+var ErrDatabaseError = fmt.Errorf("internal database error")
+
 const RegisterStmt = "INSERT INTO devices SET uuid=?,address=?,auth_string=?,hostname=?,online=?;"
 const DeviceByHostStmt = "SELECT hostname FROM devices WHERE hostname=?;"
 const DeviceByUUIDStmt = "SELECT uuid FROM devices WHERE uuid=?;"
@@ -51,13 +66,15 @@ func GetRegisterAuthCount() (int, error) {
 	rows, err := DBConnection.Query(RegisterAuthCount)
 	defer rows.Close()
 	if err != nil {
-		return 0, err
+		log.Println(err)
+		return 0, ErrDatabaseError
 	}
 	rows.Next()
 	var rowCount int
 	err = rows.Scan(&rowCount)
 	if err != nil {
-		return 0, err
+		log.Println(err)
+		return 0, ErrDatabaseError
 	}
 	return rowCount, nil
 }
@@ -65,11 +82,13 @@ func GetRegisterAuthCount() (int, error) {
 func InsertRegisterAuth(str string, used bool, timestamp int64, expire int64) error {
 	stmt, err := DBConnection.Prepare(InsertRegisterAuthStmt)
 	if err != nil {
-		return err
+		log.Println(err)
+		return ErrDatabaseError
 	}
 	_, err = stmt.Exec(str, used, timestamp, expire)
 	if err != nil {
-		return nil
+		log.Println(err)
+		return ErrDatabaseError
 	}
 	return nil
 }
@@ -85,15 +104,16 @@ func IsAuthValid(authStr string) (bool, error) {
 	if err == sql.ErrNoRows {
 		return false, nil
 	} else if err != nil {
-		return false, err
+		log.Println(err)
+		return false, ErrDatabaseError
 	}
 
 	if authStr != str {
-		return false, fmt.Errorf("Unauthorized: Invalid auth string")
+		return false, ErrAuthStringInvalid
 	} else if used == true {
-		return false, fmt.Errorf("Unauthorized: Auth already used")
+		return false, ErrAuthUsed
 	} else if expireTimestamp < time.Now().Unix() {
-		return false, fmt.Errorf("Unauthorized: Auth expired")
+		return false, ErrAuthExpired
 	}
 	return true, nil
 }
@@ -101,7 +121,8 @@ func IsAuthValid(authStr string) (bool, error) {
 func SetAuthUsed(authStr string, used bool) error {
 	stmt, err := DBConnection.Prepare(SetRegisterAuthUsedStmt)
 	if err != nil {
-		return err
+		log.Println(err)
+		return ErrDatabaseError
 	}
 	_, err = stmt.Exec(used, authStr)
 	return nil
@@ -114,7 +135,8 @@ func RowExists(stmt string, args ...interface{}) (bool, error) {
 	if err == sql.ErrNoRows {
 		return false, nil
 	} else if err != nil {
-		return false, err
+		log.Println(err)
+		return false, ErrDatabaseError
 	}
 	return true, nil
 }
@@ -122,10 +144,11 @@ func RowExists(stmt string, args ...interface{}) (bool, error) {
 func authorizeDeviceHostName(device *Device) error {
 	exists, err := RowExists(DeviceByHostStmt, device.Hostname)
 	if err != nil {
-		return err
+		log.Println(err)
+		return ErrDatabaseError
 	}
-	if exists == true {
-		return fmt.Errorf("Device with that hostname already exists")
+	if exists == false {
+		return ErrHostnameNotAuthorized
 	}
 	return nil
 }
@@ -133,10 +156,11 @@ func authorizeDeviceHostName(device *Device) error {
 func authorizeDeviceUUID(uuid string, device *Device) error {
 	exists, err := RowExists(DeviceByUUIDStmt, device.UUID)
 	if err != nil {
-		return err
+		log.Println(err)
+		return ErrDatabaseError
 	}
 	if exists == false {
-		return fmt.Errorf("Device with that UUID does not exist")
+		return ErrUUIDNotAuthorized
 	}
 	return nil
 }
@@ -144,14 +168,16 @@ func authorizeDeviceUUID(uuid string, device *Device) error {
 func HandleRegister(device *Device) error {
 	exists, err := RowExists(DeviceByHostStmt, device.Hostname)
 	if err != nil {
-		return err
+		log.Println(err)
+		return ErrDatabaseError
 	}
 	if exists == true {
-		return fmt.Errorf("Device with that hostname already exists")
+		return ErrDeviceWithHostnameExists
 	}
 	stmt, err := DBConnection.Prepare(RegisterStmt)
 	if err != nil {
-		return err
+		log.Println(err)
+		return ErrDatabaseError
 	}
 	_, err = stmt.Exec(device.UUID, device.Address, device.AuthStr, device.Hostname, device.Online)
 	return err
