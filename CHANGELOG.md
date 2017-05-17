@@ -37,3 +37,6 @@ Strip port from device ip addr when registering a device
 
 ## Thu 11 May 2017 07:42:09 PM MDT Version: 0.0.11
 Make errors returned from db more standardized.
+
+## Wed 17 May 2017 12:26:40 AM MDT Version: 0.0.12
+Implemented login and logoff endpoints

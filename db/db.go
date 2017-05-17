@@ -50,12 +50,17 @@ var ErrAuthStringInvalid = fmt.Errorf("invalid device authorization string")
 
 var ErrDeviceWithHostnameExists = fmt.Errorf("a device with that hostname already registered with this server")
 var ErrDeviceWithUUIDExists = fmt.Errorf("a device with that UUID already registered with this server")
+var ErrLoginUnauthorized = fmt.Errorf("unauthorized login: device hostname, uuid or auth string unrecognized")
+var ErrUnauthorizedDevice = fmt.Errorf("unknown or unauthorized device")
 
 var ErrDatabaseError = fmt.Errorf("internal database error")
 
 const RegisterStmt = "INSERT INTO devices SET uuid=?,address=?,auth_string=?,hostname=?,online=?;"
 const DeviceByHostStmt = "SELECT hostname FROM devices WHERE hostname=?;"
 const DeviceByUUIDStmt = "SELECT uuid FROM devices WHERE uuid=?;"
+const AuthorizeDeviceStmt = "SELECT hostname,uuid,auth_string FROM devices WHERE hostname=? AND uuid=? AND auth_string=?;"
+const SetOnlineStatusStmt = "UPDATE devices SET online=? WHERE uuid=? AND auth_string=?;"
+const GetDeviceStatusStmt = "SELECT online FROM devices WHERE uuid=?;"
 
 const RegisterAuthCount = "SELECT COUNT(*) FROM register_auths;"
 const InsertRegisterAuthStmt = "INSERT INTO register_auths SET auth_string=?,used=?,timestamp=?,expire_timestamp=?;"
@@ -153,16 +158,36 @@ func authorizeDeviceHostName(device *Device) error {
 	return nil
 }
 
-func authorizeDeviceUUID(uuid string, device *Device) error {
+func authorizeDeviceUUID(device *Device) error {
 	exists, err := RowExists(DeviceByUUIDStmt, device.UUID)
+	if exists == false {
+		return ErrUUIDNotAuthorized
+	}
 	if err != nil {
 		log.Println(err)
 		return ErrDatabaseError
 	}
-	if exists == false {
-		return ErrUUIDNotAuthorized
-	}
 	return nil
+}
+
+func AuthorizeDevice(device *Device) (bool, error) {
+	var hostname string
+	var uuid string
+	var auth string
+	err := DBConnection.QueryRow(AuthorizeDeviceStmt,
+		device.Hostname, device.UUID, device.AuthStr).Scan(&hostname, &uuid, &auth)
+	if err == sql.ErrNoRows {
+		return false, ErrDatabaseError
+	} else if err != nil {
+		log.Println(err)
+		return false, ErrDatabaseError
+	}
+	if device.Hostname == hostname &&
+		device.UUID == uuid &&
+		device.AuthStr == auth {
+		return true, nil
+	}
+	return false, nil
 }
 
 func HandleRegister(device *Device) error {
@@ -183,12 +208,44 @@ func HandleRegister(device *Device) error {
 	return err
 }
 
-func HandleLogin(uuid string, device *Device) {
+func IsDeviceOnline(device *Device) (bool, error) {
+	var online bool
+	err := DBConnection.QueryRow(GetDeviceStatusStmt, device.UUID).Scan(&online)
+	if err == sql.ErrNoRows || err != nil {
+		log.Println(err)
+		return false, ErrDatabaseError
+	}
+	return online, nil
 }
 
-func HandleLogoff(data []byte) {}
-func HandlePing(data []byte)   {}
-func HandleError(data []byte)  {}
+func HandleLogin(device *Device) error {
+	auth, err := AuthorizeDevice(device)
+	if err != nil || auth == false {
+		return err
+	}
+	stmt, err := DBConnection.Prepare(SetOnlineStatusStmt)
+	if err != nil {
+		return nil
+	}
+	_, err = stmt.Exec(true, device.UUID, device.AuthStr)
+	return err
+}
+
+func HandleLogoff(device *Device) error {
+	auth, err := AuthorizeDevice(device)
+	if err != nil || auth == false {
+		return err
+	}
+	stmt, err := DBConnection.Prepare(SetOnlineStatusStmt)
+	if err != nil {
+		return nil
+	}
+	_, err = stmt.Exec(false, device.UUID, device.AuthStr)
+	return err
+}
+
+func HandlePing(data []byte)  {}
+func HandleError(data []byte) {}
 
 func Init() error {
 	var err error

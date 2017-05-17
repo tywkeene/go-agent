@@ -93,19 +93,19 @@ func registerHandle(w http.ResponseWriter, r *http.Request) {
 	if errHandle.Handle(err, http.StatusUnauthorized, utils.ErrorActionErr) == true {
 		return
 	}
-
-	uuid, err := json.Marshal(uuid.NewV4().String())
+	deviceUUID := uuid.NewV4().String()
+	uuidJson, err := json.Marshal(deviceUUID)
 	if errHandle.Handle(err, http.StatusInternalServerError, utils.ErrorActionErr) == true {
 		return
 	}
 
 	addr := strings.Split(r.RemoteAddr, ":")
 	device := &db.Device{
-		UUID:        string(uuid),
+		UUID:        deviceUUID,
 		Address:     addr[0],
 		AuthStr:     registerAuth.AuthStr,
 		Hostname:    registerAuth.Hostname,
-		Online:      true,
+		Online:      false,
 		LastSeen:    nil,
 		LocationLog: nil,
 	}
@@ -121,7 +121,7 @@ func registerHandle(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	w.WriteHeader(http.StatusOK)
 	setDefaultResponseHeaders(w)
-	io.WriteString(w, string(device.UUID))
+	io.WriteString(w, string(uuidJson))
 }
 
 func pingHandle(w http.ResponseWriter, r *http.Request) {
@@ -130,14 +130,75 @@ func pingHandle(w http.ResponseWriter, r *http.Request) {
 
 func loginHandle(w http.ResponseWriter, r *http.Request) {
 	LogHttp(r)
-	errHandle := utils.NewHttpErrorHandle("registerHandle", w, r)
+	errHandle := utils.NewHttpErrorHandle("loginHandle", w, r)
 	if validateRequestMethod(errHandle, "POST") == false {
 		return
 	}
+	decoder := json.NewDecoder(r.Body)
+	var device *db.Device
+	err := decoder.Decode(&device)
+	if errHandle.Handle(err, http.StatusInternalServerError, utils.ErrorActionErr) == true {
+		return
+	}
+
+	online, err := db.IsDeviceOnline(device)
+	if err != nil {
+		log.Println(err)
+		errHandle.Handle(fmt.Errorf("error getting device status"),
+			http.StatusInternalServerError, utils.ErrorActionErr)
+		return
+	}
+	if online == true {
+		errHandle.Handle(fmt.Errorf("that device is already online"), http.StatusBadRequest, utils.ErrorActionErr)
+		return
+	}
+
+	err = db.HandleLogin(device)
+	if errHandle.Handle(err, http.StatusUnauthorized, utils.ErrorActionErr) == true {
+		return
+	}
+	defer r.Body.Close()
+	w.WriteHeader(http.StatusOK)
+	setDefaultResponseHeaders(w)
+	log.Printf("Device '%s' logged in [authstr:%s] [uuid:%s]",
+		device.Hostname, device.AuthStr, device.UUID)
 }
 
 func logoffHandle(w http.ResponseWriter, r *http.Request) {
 	LogHttp(r)
+	errHandle := utils.NewHttpErrorHandle("logoffHandle", w, r)
+	if validateRequestMethod(errHandle, "POST") == false {
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	var device *db.Device
+	err := decoder.Decode(&device)
+	if errHandle.Handle(err, http.StatusInternalServerError, utils.ErrorActionErr) == true {
+		return
+	}
+
+	online, err := db.IsDeviceOnline(device)
+	if err != nil {
+		log.Println(err)
+		errHandle.Handle(fmt.Errorf("error getting device status"),
+			http.StatusInternalServerError, utils.ErrorActionErr)
+		return
+	}
+	if online == false {
+		errHandle.Handle(fmt.Errorf("that device is already offline"), http.StatusBadRequest, utils.ErrorActionErr)
+		return
+	}
+
+	err = db.HandleLogoff(device)
+	if errHandle.Handle(err, http.StatusUnauthorized, utils.ErrorActionErr) == true {
+		return
+	}
+	defer r.Body.Close()
+	w.WriteHeader(http.StatusOK)
+	setDefaultResponseHeaders(w)
+
+	log.Printf("Device '%s' logged off [authstr:%s] [uuid:%s]",
+		device.Hostname, device.AuthStr, device.UUID)
 }
 
 func errorHandle(w http.ResponseWriter, r *http.Request) {
