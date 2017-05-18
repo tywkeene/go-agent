@@ -124,10 +124,6 @@ func registerHandle(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, string(uuidJson))
 }
 
-func pingHandle(w http.ResponseWriter, r *http.Request) {
-	LogHttp(r)
-}
-
 func loginHandle(w http.ResponseWriter, r *http.Request) {
 	LogHttp(r)
 	errHandle := utils.NewHttpErrorHandle("loginHandle", w, r)
@@ -198,6 +194,32 @@ func logoffHandle(w http.ResponseWriter, r *http.Request) {
 	setDefaultResponseHeaders(w)
 
 	log.Printf("Device '%s' logged off [authstr:%s] [uuid:%s]",
+		device.Hostname, device.AuthStr, device.UUID)
+}
+
+func pingHandle(w http.ResponseWriter, r *http.Request) {
+	LogHttp(r)
+	errHandle := utils.NewHttpErrorHandle("pingHandle", w, r)
+	if validateRequestMethod(errHandle, "POST") == false {
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	var device *db.Device
+	err := decoder.Decode(&device)
+	if errHandle.Handle(err, http.StatusInternalServerError, utils.ErrorActionErr) == true {
+		return
+	}
+
+	err = db.HandlePing(device)
+	if errHandle.Handle(err, http.StatusInternalServerError, utils.ErrorActionErr) == true {
+		return
+	}
+
+	defer r.Body.Close()
+	w.WriteHeader(http.StatusOK)
+	setDefaultResponseHeaders(w)
+
+	log.Printf("Device '%s' has pinged [authstr:%s] [uuid:%s]",
 		device.Hostname, device.AuthStr, device.UUID)
 }
 

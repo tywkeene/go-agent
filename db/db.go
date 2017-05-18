@@ -59,8 +59,9 @@ const RegisterStmt = "INSERT INTO devices SET uuid=?,address=?,auth_string=?,hos
 const DeviceByHostStmt = "SELECT hostname FROM devices WHERE hostname=?;"
 const DeviceByUUIDStmt = "SELECT uuid FROM devices WHERE uuid=?;"
 const AuthorizeDeviceStmt = "SELECT hostname,uuid,auth_string FROM devices WHERE hostname=? AND uuid=? AND auth_string=?;"
-const SetOnlineStatusStmt = "UPDATE devices SET online=? WHERE uuid=? AND auth_string=?;"
+const SetOnlineStatusStmt = "UPDATE devices SET online=? WHERE hostname=? AND uuid=? AND auth_string=?;"
 const GetDeviceStatusStmt = "SELECT online FROM devices WHERE uuid=?;"
+const PingStmt = "UPDATE devices SET last_seen=? WHERE hostname=? AND uuid=? AND auth_string=?;"
 
 const RegisterAuthCount = "SELECT COUNT(*) FROM register_auths;"
 const InsertRegisterAuthStmt = "INSERT INTO register_auths SET auth_string=?,used=?,timestamp=?,expire_timestamp=?;"
@@ -218,16 +219,24 @@ func IsDeviceOnline(device *Device) (bool, error) {
 	return online, nil
 }
 
+func SetDeviceOnlineStatus(device *Device, online bool) error {
+	stmt, err := DBConnection.Prepare(SetOnlineStatusStmt)
+	if err != nil {
+		return nil
+	}
+	_, err = stmt.Exec(online, device.Hostname, device.UUID, device.AuthStr)
+	return err
+}
+
 func HandleLogin(device *Device) error {
 	auth, err := AuthorizeDevice(device)
 	if err != nil || auth == false {
 		return err
 	}
-	stmt, err := DBConnection.Prepare(SetOnlineStatusStmt)
-	if err != nil {
-		return nil
+	if err := SetDeviceOnlineStatus(device, true); err != nil {
+		log.Println(err)
+		return ErrDatabaseError
 	}
-	_, err = stmt.Exec(true, device.UUID, device.AuthStr)
 	return err
 }
 
@@ -236,15 +245,48 @@ func HandleLogoff(device *Device) error {
 	if err != nil || auth == false {
 		return err
 	}
-	stmt, err := DBConnection.Prepare(SetOnlineStatusStmt)
-	if err != nil {
-		return nil
+	if err := SetDeviceOnlineStatus(device, false); err != nil {
+		log.Println(err)
+		return ErrDatabaseError
 	}
-	_, err = stmt.Exec(false, device.UUID, device.AuthStr)
-	return err
+	return nil
 }
 
-func HandlePing(data []byte)  {}
+func HandlePing(device *Device) error {
+	auth, err := AuthorizeDevice(device)
+	if err != nil || auth == false {
+		return err
+	}
+	var timestamp = time.Now().Format(time.RFC3339)
+	stmt, err := DBConnection.Prepare(PingStmt)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(timestamp, device.Hostname, device.UUID, device.AuthStr)
+	if err != nil {
+		log.Println(err)
+		return ErrDatabaseError
+	}
+
+	online, err := IsDeviceOnline(device)
+	if err != nil {
+		log.Println(err)
+		return ErrDatabaseError
+	}
+	if online == false {
+		stmt, err = DBConnection.Prepare(SetOnlineStatusStmt)
+		if err != nil {
+			return err
+		}
+		_, err = stmt.Exec(true, device.Hostname, device.UUID, device.AuthStr)
+		if err != nil {
+			log.Println(err)
+			return ErrDatabaseError
+		}
+	}
+	return nil
+}
+
 func HandleError(data []byte) {}
 
 func Init() error {

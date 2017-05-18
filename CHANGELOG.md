@@ -44,3 +44,6 @@ Implemented login and logoff endpoints
 ## Thu 18 May 2017 09:27:45 AM MDT Version: 0.0.13
 Added forgotten primary key to error_reports table in schema.sql
 
+## Thu 18 May 2017 10:50:11 AM MDT Version: 0.0.14
+Implemented /ping endpoint. Added SetOnlineStatus function.
+Devices will come back online if server recieves a ping from that device
