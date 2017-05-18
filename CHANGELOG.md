@@ -47,3 +47,8 @@ Added forgotten primary key to error_reports table in schema.sql
 ## Thu 18 May 2017 10:50:11 AM MDT Version: 0.0.14
 Implemented /ping endpoint. Added SetOnlineStatus function.
 Devices will come back online if server recieves a ping from that device
+
+## Thu 18 May 2017 12:51:19 PM MDT Version: 0.0.15
+Cleaned up db/db.go.
+Removed unused error variables
+Removed authorizeDeviceHostName() and authorizeDeviceUUID()

@@ -40,29 +40,32 @@ type Device struct {
 var DBConnection *sql.DB
 
 // API Errors
-
-var ErrHostnameNotAuthorized = fmt.Errorf("no device with that hostname is registered with this server")
-var ErrUUIDNotAuthorized = fmt.Errorf("no device with that UUID is registered with this server")
-
 var ErrAuthUsed = fmt.Errorf("device authorization already used")
 var ErrAuthExpired = fmt.Errorf("device authorization expired")
 var ErrAuthStringInvalid = fmt.Errorf("invalid device authorization string")
 
 var ErrDeviceWithHostnameExists = fmt.Errorf("a device with that hostname already registered with this server")
-var ErrDeviceWithUUIDExists = fmt.Errorf("a device with that UUID already registered with this server")
-var ErrLoginUnauthorized = fmt.Errorf("unauthorized login: device hostname, uuid or auth string unrecognized")
 var ErrUnauthorizedDevice = fmt.Errorf("unknown or unauthorized device")
 
+// We don't want to leak raw mysql errors to the client, instead we do
+// if err != nil {
+//     log.Println(err)
+//     return ErrDatabaseError
+// }
+// The actual error gets logged on the server side, and the
+// client only knows there was *some* database error.
+// TODO: should probably find a more pragmatic way of dealing with these errors
 var ErrDatabaseError = fmt.Errorf("internal database error")
 
+// Queries dealing with devices
 const RegisterStmt = "INSERT INTO devices SET uuid=?,address=?,auth_string=?,hostname=?,online=?;"
 const DeviceByHostStmt = "SELECT hostname FROM devices WHERE hostname=?;"
-const DeviceByUUIDStmt = "SELECT uuid FROM devices WHERE uuid=?;"
 const AuthorizeDeviceStmt = "SELECT hostname,uuid,auth_string FROM devices WHERE hostname=? AND uuid=? AND auth_string=?;"
 const SetOnlineStatusStmt = "UPDATE devices SET online=? WHERE hostname=? AND uuid=? AND auth_string=?;"
 const GetDeviceStatusStmt = "SELECT online FROM devices WHERE uuid=?;"
 const PingStmt = "UPDATE devices SET last_seen=? WHERE hostname=? AND uuid=? AND auth_string=?;"
 
+// Queries dealing with device regstration authorizations
 const RegisterAuthCount = "SELECT COUNT(*) FROM register_auths;"
 const InsertRegisterAuthStmt = "INSERT INTO register_auths SET auth_string=?,used=?,timestamp=?,expire_timestamp=?;"
 const ValidateRegisterAuthStmt = "SELECT auth_string,used,timestamp,expire_timestamp FROM register_auths WHERE auth_string=?;"
@@ -145,30 +148,6 @@ func RowExists(stmt string, args ...interface{}) (bool, error) {
 		return false, ErrDatabaseError
 	}
 	return true, nil
-}
-
-func authorizeDeviceHostName(device *Device) error {
-	exists, err := RowExists(DeviceByHostStmt, device.Hostname)
-	if err != nil {
-		log.Println(err)
-		return ErrDatabaseError
-	}
-	if exists == false {
-		return ErrHostnameNotAuthorized
-	}
-	return nil
-}
-
-func authorizeDeviceUUID(device *Device) error {
-	exists, err := RowExists(DeviceByUUIDStmt, device.UUID)
-	if exists == false {
-		return ErrUUIDNotAuthorized
-	}
-	if err != nil {
-		log.Println(err)
-		return ErrDatabaseError
-	}
-	return nil
 }
 
 func AuthorizeDevice(device *Device) (bool, error) {
