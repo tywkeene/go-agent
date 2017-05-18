@@ -40,3 +40,7 @@ Make errors returned from db more standardized.
 
 ## Wed 17 May 2017 12:26:40 AM MDT Version: 0.0.12
 Implemented login and logoff endpoints
+
+## Thu 18 May 2017 09:27:45 AM MDT Version: 0.0.13
+Added forgotten primary key to error_reports table in schema.sql
+
