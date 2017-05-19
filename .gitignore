@@ -1,7 +1,9 @@
-go-tracker
+tracker-server
+tracker-client
 *.swp
 *.swo
 .vim-bookmarks
-vendor/
+cmd/server/vendor/
+cmd/client/vendor/
 glide.lock
-secret_config.toml
+etc/secret_config.toml

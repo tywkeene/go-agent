@@ -39,6 +39,5 @@ CREATE TABLE IF NOT EXISTS error_reports (
     uuid VARCHAR(38) NOT NULL,
     string VARCHAR(64) NOT NULL,
     timestamp TIMESTAMP NOT NULL,
-    fatal BOOLEAN NOT NULL,
-    PRIMARY KEY (id)
+    fatal BOOLEAN NOT NULL
 );

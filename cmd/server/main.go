@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/tywkeene/go-tracker/auth"
-	"github.com/tywkeene/go-tracker/db"
-	"github.com/tywkeene/go-tracker/options"
-	"github.com/tywkeene/go-tracker/routes"
+	"github.com/tywkeene/go-tracker/cmd/server/auth"
+	"github.com/tywkeene/go-tracker/cmd/server/db"
+	"github.com/tywkeene/go-tracker/cmd/server/options"
+	"github.com/tywkeene/go-tracker/cmd/server/routes"
 	"log"
 	"time"
 )

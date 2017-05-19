@@ -52,3 +52,7 @@ Devices will come back online if server recieves a ping from that device
 Cleaned up db/db.go.
 Removed unused error variables
 Removed authorizeDeviceHostName() and authorizeDeviceUUID()
+
+## Fri 19 May 2017 03:48:32 PM MDT Version: 0.0.16
+Restructure entire project to allow for building server/client binaries separately
+Added -version flag to server binary

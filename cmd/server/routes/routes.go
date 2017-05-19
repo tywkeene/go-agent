@@ -10,9 +10,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/tywkeene/go-tracker/auth"
-	"github.com/tywkeene/go-tracker/db"
-	"github.com/tywkeene/go-tracker/utils"
+	"github.com/tywkeene/go-tracker/cmd/server/auth"
+	"github.com/tywkeene/go-tracker/cmd/server/db"
+	"github.com/tywkeene/go-tracker/cmd/server/utils"
 
 	"github.com/satori/go.uuid"
 )

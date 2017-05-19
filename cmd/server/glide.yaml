@@ -1,4 +1,4 @@
-package: github.com/tywkeene/go-tracker
+package: github.com/tywkeene/go-tracker/cmd/server
 import:
 - package: github.com/BurntSushi/toml
   version: ^0.3.0

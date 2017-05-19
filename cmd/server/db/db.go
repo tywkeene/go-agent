@@ -7,7 +7,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/tywkeene/go-tracker/options"
+	"github.com/tywkeene/go-tracker/cmd/server/options"
 )
 
 type DeviceRegister struct {
