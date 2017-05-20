@@ -56,3 +56,6 @@ Removed authorizeDeviceHostName() and authorizeDeviceUUID()
 ## Fri 19 May 2017 03:48:32 PM MDT Version: 0.0.16
 Restructure entire project to allow for building server/client binaries separately
 Added -version flag to server binary
+
+## Fri 19 May 2017 08:35:54 PM MDT Version: 0.0.17
+Start work on tracker-client. Registration works

@@ -7,3 +7,4 @@ cmd/server/vendor/
 cmd/client/vendor/
 glide.lock
 etc/secret_config.toml
+etc/auth.toml
