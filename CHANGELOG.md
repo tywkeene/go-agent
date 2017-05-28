@@ -69,3 +69,7 @@ Added /status api endpoint, which merely checks for the existence of a device
 by hostname, uuid and authorization. Should be the first thing any client does
 before attempting to register or login with a server.
 Updated db.go/AuthorizeDevice() to just return ErrAUnauthorizedDevice
+
+## Sun 28 May 2017 04:13:00 PM MDT Version: 0.0.20
+Wrote the bulk of the client's logic, registering, logging in and pinging
+Added -register flag to client

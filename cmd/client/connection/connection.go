@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/tywkeene/go-tracker/cmd/client/options"
 	"github.com/tywkeene/go-tracker/cmd/client/version"
 
 	"github.com/tywkeene/go-tracker/cmd/server/db"
@@ -112,14 +113,15 @@ func (c *Connection) Post(endpoint string, expectStatus int, data interface{}) (
 	return inflateResponse(response)
 }
 
-func (c *Connection) constructDevice(uuid string) error {
+func (c *Connection) constructDevice(auth *options.Authorization) error {
 	hostname, err := os.Hostname()
 	if err != nil {
 		return err
 	}
 	c.Device = &db.Device{
 		Hostname: hostname,
-		UUID:     uuid,
+		UUID:     auth.UUID,
+		AuthStr:  auth.AuthStr,
 	}
 	return nil
 }
@@ -136,8 +138,8 @@ func (c *Connection) constructDeviceRegister(auth string) error {
 	return nil
 }
 
-func (c *Connection) Register(auth string) error {
-	err := c.constructDeviceRegister(auth)
+func (c *Connection) Register(authstr string) error {
+	err := c.constructDeviceRegister(authstr)
 	if err != nil {
 		return err
 	}
@@ -155,19 +157,37 @@ func (c *Connection) Register(auth string) error {
 		return fmt.Errorf("Did not get a UUID from the server")
 	}
 
-	c.constructDevice(uuid)
+	auth := &options.Authorization{
+		UUID:    uuid,
+		AuthStr: authstr,
+	}
+	c.constructDevice(auth)
 	log.Println("Successfully registered with", c.Address)
 	return nil
 }
 
+func (c *Connection) GetStatus(auth *options.Authorization) (bool, error) {
+	c.constructDevice(auth)
+	// We need to catch the http status code so we do this semi manually
+	request := c.ConstructPostRequest("/status", c.Device)
+	response, err := c.client.Do(request)
+	if response.StatusCode != http.StatusOK {
+		return false, err
+	}
+	return true, nil
+}
+
 func (c *Connection) Login() error {
-	return nil
+	_, err := c.Post("/login", http.StatusOK, &c.Device)
+	return err
 }
 
 func (c *Connection) Logout() error {
-	return nil
+	_, err := c.Post("/logout", http.StatusOK, &c.Device)
+	return err
 }
 
 func (c *Connection) Ping() error {
-	return nil
+	_, err := c.Post("/ping", http.StatusOK, &c.Device)
+	return err
 }
