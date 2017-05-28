@@ -222,11 +222,47 @@ func pingHandle(w http.ResponseWriter, r *http.Request) {
 		device.Hostname, device.AuthStr, device.UUID)
 }
 
+func statusHandle(w http.ResponseWriter, r *http.Request) {
+	LogHttp(r)
+	errHandle := utils.NewHttpErrorHandle("statusHandle", w, r)
+	if validateRequestMethod(errHandle, "POST") == false {
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	var device *db.Device
+	err := decoder.Decode(&device)
+	if errHandle.Handle(err, http.StatusInternalServerError, utils.ErrorActionErr) == true {
+		return
+	}
+
+	registered, err := db.AuthorizeDevice(device)
+	if err != nil {
+		log.Println(err)
+	}
+
+	if registered == false {
+		defer r.Body.Close()
+		w.WriteHeader(http.StatusUnauthorized)
+		setDefaultResponseHeaders(w)
+		log.Printf("Unregistered device '%s' has sent a status check [authstr:%s] [uuid:%s]",
+			device.Hostname, device.AuthStr, device.UUID)
+		return
+	}
+
+	defer r.Body.Close()
+	w.WriteHeader(http.StatusOK)
+	setDefaultResponseHeaders(w)
+	log.Printf("Device '%s' has sent a status check [authstr:%s] [uuid:%s]",
+		device.Hostname, device.AuthStr, device.UUID)
+	return
+}
+
 func RegisterHandles() {
 	http.HandleFunc("/register", registerHandle)
 	http.HandleFunc("/ping", pingHandle)
 	http.HandleFunc("/login", loginHandle)
 	http.HandleFunc("/logoff", logoffHandle)
+	http.HandleFunc("/status", statusHandle)
 }
 
 func Launch() {

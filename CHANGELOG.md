@@ -63,3 +63,9 @@ Start work on tracker-client. Registration works
 ## Sun 28 May 2017 01:32:03 PM MDT Version: 0.0.18
 Remove unused table in database for now
 Update routes.go and db.go accordingly
+
+## Sun 28 May 2017 02:09:33 PM MDT Version: 0.0.19
+Added /status api endpoint, which merely checks for the existence of a device
+by hostname, uuid and authorization. Should be the first thing any client does
+before attempting to register or login with a server.
+Updated db.go/AuthorizeDevice() to just return ErrAUnauthorizedDevice

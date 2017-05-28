@@ -143,18 +143,14 @@ func AuthorizeDevice(device *Device) (bool, error) {
 	var auth string
 	err := DBConnection.QueryRow(AuthorizeDeviceStmt,
 		device.Hostname, device.UUID, device.AuthStr).Scan(&hostname, &uuid, &auth)
-	if err == sql.ErrNoRows {
-		return false, ErrDatabaseError
+	if err != nil && err == sql.ErrNoRows {
+		log.Println(err)
+		return false, ErrUnauthorizedDevice
 	} else if err != nil {
 		log.Println(err)
 		return false, ErrDatabaseError
 	}
-	if device.Hostname == hostname &&
-		device.UUID == uuid &&
-		device.AuthStr == auth {
-		return true, nil
-	}
-	return false, nil
+	return true, nil
 }
 
 func HandleRegister(device *Device) error {
