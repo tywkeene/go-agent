@@ -59,3 +59,7 @@ Added -version flag to server binary
 
 ## Fri 19 May 2017 08:35:54 PM MDT Version: 0.0.17
 Start work on tracker-client. Registration works
+
+## Sun 28 May 2017 01:32:03 PM MDT Version: 0.0.18
+Remove unused table in database for now
+Update routes.go and db.go accordingly

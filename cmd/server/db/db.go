@@ -15,26 +15,13 @@ type DeviceRegister struct {
 	AuthStr  string `json:"auth_string"`
 }
 
-type LocationEntry struct {
-	Ssid      string `json:"ssid"`
-	Addr      string `json:"addr"`
-	LoginName string `json:"login_name"`
-}
-
-type ClientError struct {
-	Str       string    `json:"err_str"`
-	Timestamp time.Time `json:"timestamp"`
-	Fatal     bool      `json:"fatal"`
-}
-
 type Device struct {
-	UUID        string           `json:"uuid"`
-	Address     string           `json:"address"`
-	AuthStr     string           `json:"auth_string"`
-	Hostname    string           `json:"hostname"`
-	Online      bool             `json:"online"`
-	LastSeen    *time.Time       `json:"last_seen"`
-	LocationLog []*LocationEntry `json:"location_log"`
+	UUID     string     `json:"uuid"`
+	Address  string     `json:"address"`
+	AuthStr  string     `json:"auth_string"`
+	Hostname string     `json:"hostname"`
+	Online   bool       `json:"online"`
+	LastSeen *time.Time `json:"last_seen"`
 }
 
 var DBConnection *sql.DB
@@ -265,8 +252,6 @@ func HandlePing(device *Device) error {
 	}
 	return nil
 }
-
-func HandleError(data []byte) {}
 
 func Init() error {
 	var err error

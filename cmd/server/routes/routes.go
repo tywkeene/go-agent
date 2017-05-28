@@ -101,13 +101,12 @@ func registerHandle(w http.ResponseWriter, r *http.Request) {
 
 	addr := strings.Split(r.RemoteAddr, ":")
 	device := &db.Device{
-		UUID:        deviceUUID,
-		Address:     addr[0],
-		AuthStr:     registerAuth.AuthStr,
-		Hostname:    registerAuth.Hostname,
-		Online:      false,
-		LastSeen:    nil,
-		LocationLog: nil,
+		UUID:     deviceUUID,
+		Address:  addr[0],
+		AuthStr:  registerAuth.AuthStr,
+		Hostname: registerAuth.Hostname,
+		Online:   false,
+		LastSeen: nil,
 	}
 
 	err = db.HandleRegister(device)
@@ -223,16 +222,11 @@ func pingHandle(w http.ResponseWriter, r *http.Request) {
 		device.Hostname, device.AuthStr, device.UUID)
 }
 
-func errorHandle(w http.ResponseWriter, r *http.Request) {
-	LogHttp(r)
-}
-
 func RegisterHandles() {
 	http.HandleFunc("/register", registerHandle)
 	http.HandleFunc("/ping", pingHandle)
 	http.HandleFunc("/login", loginHandle)
 	http.HandleFunc("/logoff", logoffHandle)
-	http.HandleFunc("/report_error", errorHandle)
 }
 
 func Launch() {
