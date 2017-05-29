@@ -1,9 +1,9 @@
-CREATE DATABASE IF NOT EXISTS tracker;
+CREATE DATABASE IF NOT EXISTS agent;
 USE mysql;
 
-CREATE USER IF NOT EXISTS 'tracker'@'localhost' IDENTIFIED BY 'tracker';
-GRANT ALL PRIVILEGES ON tracker . * TO 'tracker'@'localhost';
-USE tracker;
+CREATE USER IF NOT EXISTS 'agent'@'localhost' IDENTIFIED BY 'agent';
+GRANT ALL PRIVILEGES ON agent . * TO 'agent'@'localhost';
+USE agent;
 
 CREATE TABLE IF NOT EXISTS location_entries(
     id INT NOT NULL AUTO_INCREMENT,

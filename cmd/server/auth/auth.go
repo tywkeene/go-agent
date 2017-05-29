@@ -6,7 +6,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/tywkeene/go-tracker/cmd/server/db"
+	"github.com/tywkeene/go-agent/cmd/server/db"
 )
 
 type RegisterAuth struct {

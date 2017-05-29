@@ -9,7 +9,7 @@ import (
 	"path"
 	"runtime"
 
-	"github.com/tywkeene/go-tracker/version"
+	"github.com/tywkeene/go-agent/version"
 )
 
 type APIError struct {
@@ -37,7 +37,7 @@ func NewHttpErrorHandle(caller string, response http.ResponseWriter, request *ht
 //These headers should always be set
 func SetResponseHeaders(response http.ResponseWriter, status int) {
 	response.Header().Set("Connection", "close")
-	response.Header().Set("Server", "Go-Tracker server/"+version.GetVersion())
+	response.Header().Set("Server", "Go-Agent server/"+version.GetVersion())
 	response.Header().Set("Content-Type", "application/json")
 	response.WriteHeader(status)
 }

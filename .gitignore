@@ -1,10 +1,8 @@
-tracker-server
-tracker-client
+agent-server
+agent-client
 *.swp
 *.swo
 .vim-bookmarks
-cmd/server/vendor/
-cmd/client/vendor/
 glide.lock
 etc/secret_config.toml
 etc/auth.toml

@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/BurntSushi/toml"
-	"github.com/tywkeene/go-tracker/version"
+	"github.com/tywkeene/go-agent/version"
 	"os"
 )
 

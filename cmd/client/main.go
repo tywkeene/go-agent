@@ -5,10 +5,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/tywkeene/go-tracker/cmd/client/connection"
-	"github.com/tywkeene/go-tracker/cmd/client/options"
+	"github.com/tywkeene/go-agent/cmd/client/connection"
+	"github.com/tywkeene/go-agent/cmd/client/options"
 
-	"github.com/tywkeene/go-tracker/cmd/server/routes"
+	"github.com/tywkeene/go-agent/cmd/server/routes"
 )
 
 func init() {
@@ -39,7 +39,7 @@ func main() {
 		}
 		if registered == false {
 			fmt.Println(`Device not registered, you can register by running:\n\t
-			tracker-client -config <config file> -register <auth string>`)
+			agent-client -config <config file> -register <auth string>`)
 			os.Exit(-1)
 		} else {
 			// Login

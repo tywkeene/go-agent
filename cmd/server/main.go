@@ -4,15 +4,15 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"time"
 
-	"github.com/tywkeene/go-tracker/cmd/server/auth"
-	"github.com/tywkeene/go-tracker/cmd/server/db"
-	"github.com/tywkeene/go-tracker/cmd/server/options"
-	"github.com/tywkeene/go-tracker/cmd/server/routes"
+	"github.com/tywkeene/go-agent/cmd/server/auth"
+	"github.com/tywkeene/go-agent/cmd/server/db"
+	"github.com/tywkeene/go-agent/cmd/server/options"
+	"github.com/tywkeene/go-agent/cmd/server/routes"
 )
 
 func init() {
 	options.ReadConfig()
-	log.Infof("Starting tracker server...")
+	log.Infof("Starting go-agent server...")
 	if err := db.Init(); err != nil {
 		panic(err)
 	}

@@ -7,7 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"time"
 
-	"github.com/tywkeene/go-tracker/cmd/server/options"
+	"github.com/tywkeene/go-agent/cmd/server/options"
 )
 
 type DeviceRegister struct {

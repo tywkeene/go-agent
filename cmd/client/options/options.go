@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/tywkeene/go-tracker/version"
+	"github.com/tywkeene/go-agent/version"
 
 	"github.com/BurntSushi/toml"
 )

@@ -8,12 +8,12 @@ export GOARCH=amd64
 
 
 function build(){
-    echo "Building go-tracker $1 binary..."
-    rm -f tracker-$1
-    go build -v -o tracker-$1 \
-        -ldflags "-X github.com/tywkeene/go-tracker/version.Version=$VERSION \
-        -X github.com/tywkeene/go-tracker/version.CommitHash=$COMMIT" \
-        github.com/tywkeene/go-tracker/cmd/$1
+    echo "Building go-agent $1 binary..."
+    rm -f agent-$1
+    go build -v -o agent-$1 \
+        -ldflags "-X github.com/tywkeene/go-agent/version.Version=$VERSION \
+        -X github.com/tywkeene/go-agent/version.CommitHash=$COMMIT" \
+        github.com/tywkeene/go-agent/cmd/$1
 }
 
 function usage(){

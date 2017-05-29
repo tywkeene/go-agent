@@ -96,3 +96,6 @@ Added ErrAlreadyOnline, ErrAlreadyOffline and ErrGettingStatus to cmd/server/rou
 ## Mon 29 May 2017 02:12:40 PM MDT Version: 0.0.25
 Added APIResult structure that holds the local error, api error and response json from an api call
 Make all interfaces to the api return APIResult structure in connection.go
+
+## Mon 29 May 2017 04:49:34 PM MDT Version: 0.0.26
+Rename to go-agent

@@ -11,11 +11,11 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/tywkeene/go-tracker/cmd/client/options"
-	"github.com/tywkeene/go-tracker/version"
+	"github.com/tywkeene/go-agent/cmd/client/options"
+	"github.com/tywkeene/go-agent/version"
 
-	"github.com/tywkeene/go-tracker/cmd/server/db"
-	"github.com/tywkeene/go-tracker/cmd/server/utils"
+	"github.com/tywkeene/go-agent/cmd/server/db"
+	"github.com/tywkeene/go-agent/cmd/server/utils"
 )
 
 type Connection struct {
@@ -64,7 +64,7 @@ func NewConnection(server string) *Connection {
 		Address:   server,
 		Online:    false,
 		Authed:    false,
-		UserAgent: "go-tracker-" + version.GetVersion(),
+		UserAgent: "go-agent-" + version.GetVersion(),
 		client:    client,
 	}
 }

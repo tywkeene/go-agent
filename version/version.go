@@ -17,7 +17,7 @@ type VersionInfo struct {
 }
 
 func Print() {
-	fmt.Printf("go-tracker-%s (git commit %s)\n", Version, CommitHash)
+	fmt.Printf("go-agent-%s (git commit %s)\n", Version, CommitHash)
 }
 
 func GetVersion() string {
