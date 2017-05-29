@@ -8,6 +8,8 @@ import (
 	"os"
 	"path"
 	"runtime"
+
+	"github.com/tywkeene/go-tracker/version"
 )
 
 type APIError struct {
@@ -32,6 +34,14 @@ func NewHttpErrorHandle(caller string, response http.ResponseWriter, request *ht
 	return &HttpErrorHandler{caller, response, request}
 }
 
+//These headers should always be set
+func SetResponseHeaders(response http.ResponseWriter, status int) {
+	response.Header().Set("Connection", "close")
+	response.Header().Set("Server", "Go-Tracker server/"+version.GetVersion())
+	response.Header().Set("Content-Type", "application/json")
+	response.WriteHeader(status)
+}
+
 // HandleError locally, according to the action passed to h.Handle, and then serialized
 // in json and sent to the remote address via http, then returns true.
 // Otherwise, if there is no error, h.Handle returns false
@@ -45,8 +55,7 @@ func (h *HttpErrorHandler) Handle(err error, httpStatus int, action int) bool {
 			HTTPStatus:   httpStatus,
 		}
 		serialErr, _ := json.Marshal(&apiErr)
-		h.Response.Header().Set("Content-Type", "application/json")
-		h.Response.WriteHeader(httpStatus)
+		SetResponseHeaders(h.Response, httpStatus)
 		io.WriteString(h.Response, string(serialErr))
 	}
 	return (err != nil)

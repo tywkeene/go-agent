@@ -78,3 +78,9 @@ Added -register flag to client
 Moved cmd/{client,server}/version to root of directory, making botch packages use the same version package
 Updated build script to be less redundant
 Updated setup script to work with new build script
+
+## Sun 28 May 2017 11:32:30 PM MDT Version: 0.0.22
+Refactored routes.go
+Moved/renamed setDefaultResponseHeaders to utils/SetResponseHeaders
+Added scripts/test directory, moved test.sh from scripts/build to scripts/test
+Added scripts/test/mock_client.sh

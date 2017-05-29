@@ -46,18 +46,12 @@ func LogHttp(r *http.Request) {
 	log.Printf("%s %s %s %s", r.Method, r.URL, r.RemoteAddr, r.UserAgent())
 }
 
-//These headers should always be set
-func setDefaultResponseHeaders(response http.ResponseWriter) {
-	response.Header().Set("Connection", "close")
-	response.Header().Set("Server", "Go Tracker v0.0.0")
-}
-
 //Checks a request header and ensures it is allowed, otherwise it will set the Allow http header
 // and return HTTP 405 Method Not Allowed
 func validateRequestMethod(errHandle *utils.HttpErrorHandler, allowed string) bool {
 	if strings.Contains(allowed, errHandle.Request.Method) == false {
 		errHandle.Response.Header().Set("Allow", allowed)
-		setDefaultResponseHeaders(errHandle.Response)
+		utils.SetResponseHeaders(errHandle.Response, http.StatusMethodNotAllowed)
 		errHandle.Handle(fmt.Errorf("Method not allowed"), http.StatusMethodNotAllowed, utils.ErrorActionErr)
 		return false
 	}
@@ -118,8 +112,7 @@ func registerHandle(w http.ResponseWriter, r *http.Request) {
 		device.Hostname, registerAuth.AuthStr, device.UUID)
 
 	defer r.Body.Close()
-	w.WriteHeader(http.StatusOK)
-	setDefaultResponseHeaders(w)
+	utils.SetResponseHeaders(w, http.StatusOK)
 	io.WriteString(w, string(uuidJson))
 }
 
@@ -153,8 +146,7 @@ func loginHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-	w.WriteHeader(http.StatusOK)
-	setDefaultResponseHeaders(w)
+	utils.SetResponseHeaders(w, http.StatusOK)
 	log.Printf("Device '%s' logged in [authstr:%s] [uuid:%s]",
 		device.Hostname, device.AuthStr, device.UUID)
 }
@@ -189,9 +181,7 @@ func logoffHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-	w.WriteHeader(http.StatusOK)
-	setDefaultResponseHeaders(w)
-
+	utils.SetResponseHeaders(w, http.StatusOK)
 	log.Printf("Device '%s' logged off [authstr:%s] [uuid:%s]",
 		device.Hostname, device.AuthStr, device.UUID)
 }
@@ -215,9 +205,7 @@ func pingHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer r.Body.Close()
-	w.WriteHeader(http.StatusOK)
-	setDefaultResponseHeaders(w)
-
+	utils.SetResponseHeaders(w, http.StatusOK)
 	log.Printf("Device '%s' has pinged [authstr:%s] [uuid:%s]",
 		device.Hostname, device.AuthStr, device.UUID)
 }
@@ -241,17 +229,13 @@ func statusHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if registered == false {
-		defer r.Body.Close()
-		w.WriteHeader(http.StatusUnauthorized)
-		setDefaultResponseHeaders(w)
-		log.Printf("Unregistered device '%s' has sent a status check [authstr:%s] [uuid:%s]",
-			device.Hostname, device.AuthStr, device.UUID)
+		errHandle.Handle(fmt.Errorf("device not registered with this server"),
+			http.StatusUnauthorized, utils.ErrorActionErr)
 		return
 	}
 
 	defer r.Body.Close()
-	w.WriteHeader(http.StatusOK)
-	setDefaultResponseHeaders(w)
+	utils.SetResponseHeaders(w, http.StatusOK)
 	log.Printf("Device '%s' has sent a status check [authstr:%s] [uuid:%s]",
 		device.Hostname, device.AuthStr, device.UUID)
 	return
@@ -259,10 +243,10 @@ func statusHandle(w http.ResponseWriter, r *http.Request) {
 
 func RegisterHandles() {
 	http.HandleFunc("/register", registerHandle)
-	http.HandleFunc("/ping", pingHandle)
-	http.HandleFunc("/login", loginHandle)
-	http.HandleFunc("/logoff", logoffHandle)
-	http.HandleFunc("/status", statusHandle)
+	http.HandleFunc("/ping", GzipHandler(pingHandle))
+	http.HandleFunc("/login", GzipHandler(loginHandle))
+	http.HandleFunc("/logoff", GzipHandler(logoffHandle))
+	http.HandleFunc("/status", GzipHandler(statusHandle))
 }
 
 func Launch() {
