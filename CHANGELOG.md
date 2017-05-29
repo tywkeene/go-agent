@@ -89,3 +89,6 @@ Added scripts/test/mock_client.sh
 Migrate to using the logrus package in the server binary
 Added debug_db configuration option
 Added LogDBError
+
+## Mon 29 May 2017 02:08:41 PM MDT Version: 0.0.24
+Added ErrAlreadyOnline, ErrAlreadyOffline and ErrGettingStatus to cmd/server/routes.go

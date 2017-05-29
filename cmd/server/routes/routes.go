@@ -17,6 +17,10 @@ import (
 	"github.com/satori/go.uuid"
 )
 
+var ErrAlreadyOnline = fmt.Errorf("that device is already online")
+var ErrAlreadyOffline = fmt.Errorf("that device is already offline")
+var ErrGettingStatus = fmt.Errorf("could not retrieve device status")
+
 type gzipResponseWriter struct {
 	io.Writer
 	http.ResponseWriter
@@ -132,12 +136,11 @@ func loginHandle(w http.ResponseWriter, r *http.Request) {
 	online, err := db.IsDeviceOnline(device)
 	if err != nil {
 		log.Error(err)
-		errHandle.Handle(fmt.Errorf("error getting device status"),
-			http.StatusInternalServerError, utils.ErrorActionErr)
+		errHandle.Handle(ErrGettingStatus, http.StatusInternalServerError, utils.ErrorActionErr)
 		return
 	}
 	if online == true {
-		errHandle.Handle(fmt.Errorf("that device is already online"), http.StatusBadRequest, utils.ErrorActionErr)
+		errHandle.Handle(ErrAlreadyOnline, http.StatusBadRequest, utils.ErrorActionInfo)
 		return
 	}
 
@@ -167,12 +170,11 @@ func logoffHandle(w http.ResponseWriter, r *http.Request) {
 	online, err := db.IsDeviceOnline(device)
 	if err != nil {
 		log.Error(err)
-		errHandle.Handle(fmt.Errorf("error getting device status"),
-			http.StatusInternalServerError, utils.ErrorActionErr)
+		errHandle.Handle(ErrGettingStatus, http.StatusInternalServerError, utils.ErrorActionErr)
 		return
 	}
 	if online == false {
-		errHandle.Handle(fmt.Errorf("that device is already offline"), http.StatusBadRequest, utils.ErrorActionErr)
+		errHandle.Handle(ErrAlreadyOffline, http.StatusBadRequest, utils.ErrorActionWarn)
 		return
 	}
 
@@ -229,8 +231,7 @@ func statusHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if registered == false {
-		errHandle.Handle(fmt.Errorf("device not registered with this server"),
-			http.StatusUnauthorized, utils.ErrorActionErr)
+		errHandle.Handle(db.ErrUnauthorizedDevice, http.StatusUnauthorized, utils.ErrorActionErr)
 		return
 	}
 
