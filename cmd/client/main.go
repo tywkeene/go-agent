@@ -38,8 +38,9 @@ func main() {
 			fmt.Println(err)
 		}
 		if registered == false {
-			fmt.Println(`Device not registered, you can register by running:\n\t
-			agent-client -config <config file> -register <auth string>`)
+			fmt.Printf("Device not registered, you can register by running:\n\t" +
+				"$ agent-client -config <config file> -register <auth string>\n" +
+				"to register this device with the server, and then run again\n")
 			os.Exit(-1)
 		} else {
 			// Login
@@ -52,9 +53,12 @@ func main() {
 		}
 	}
 	fmt.Println("Successfully logged in...")
-	// Ping loop
+	pingInterval, err := time.ParseDuration(options.Config.PingInterval)
+	if err != nil {
+		panic(err)
+	}
 	for {
-		time.Sleep(5 * time.Second)
+		time.Sleep(pingInterval)
 		if result := c.Ping(); result.Ok() == false {
 			result.PrintErrors()
 		}

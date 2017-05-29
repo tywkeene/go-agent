@@ -99,3 +99,6 @@ Make all interfaces to the api return APIResult structure in connection.go
 
 ## Mon 29 May 2017 04:49:34 PM MDT Version: 0.0.26
 Rename to go-agent
+
+## Mon 29 May 2017 05:18:39 PM MDT Version: 0.0.27
+Added ping_interval to client config

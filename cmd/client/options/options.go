@@ -18,9 +18,10 @@ type Authorization struct {
 
 type Configuration struct {
 	// Authorization string to use if the -register flag was passed
-	NewAuth    string
-	ServerAddr string `toml:"server_address"`
-	AuthFile   string `toml:"auth_file"`
+	NewAuth      string
+	ServerAddr   string `toml:"server_address"`
+	AuthFile     string `toml:"auth_file"`
+	PingInterval string `toml:"ping_interval"`
 }
 
 var Config Configuration
