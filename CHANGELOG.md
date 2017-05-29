@@ -92,3 +92,7 @@ Added LogDBError
 
 ## Mon 29 May 2017 02:08:41 PM MDT Version: 0.0.24
 Added ErrAlreadyOnline, ErrAlreadyOffline and ErrGettingStatus to cmd/server/routes.go
+
+## Mon 29 May 2017 02:12:40 PM MDT Version: 0.0.25
+Added APIResult structure that holds the local error, api error and response json from an api call
+Make all interfaces to the api return APIResult structure in connection.go

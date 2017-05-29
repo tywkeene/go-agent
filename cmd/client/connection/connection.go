@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -27,6 +26,33 @@ type Connection struct {
 	Device         *db.Device
 	DeviceRegister *db.DeviceRegister
 	client         *http.Client
+}
+
+type APIResult struct {
+	LocalErr error
+	APIErr   *utils.APIError
+	Result   []byte
+}
+
+func NewAPIResult(localErr error, apiErr *utils.APIError, result []byte) *APIResult {
+	return &APIResult{
+		LocalErr: localErr,
+		APIErr:   apiErr,
+		Result:   result,
+	}
+}
+
+func (r *APIResult) Ok() bool {
+	return ((r.LocalErr == nil) && (r.APIErr == nil))
+}
+
+func (r *APIResult) PrintErrors() {
+	if r.APIErr != nil {
+		fmt.Printf("API error: %s (%d)\n", r.APIErr.ErrorMessage, r.APIErr.HTTPStatus)
+	}
+	if r.LocalErr != nil {
+		fmt.Printf("Local error: %s\n", r.LocalErr.Error())
+	}
 }
 
 func NewConnection(server string) *Connection {
@@ -74,46 +100,49 @@ func (c *Connection) ConstructPostRequest(endpoint string, data interface{}) *ht
 func inflateResponse(resp *http.Response) ([]byte, error) {
 	if resp.Header.Get("Content-Encoding") == "application/x-gzip" {
 		reader, err := gzip.NewReader(resp.Body)
+		defer resp.Body.Close()
 		if err != nil {
 			return nil, err
 		}
-		defer reader.Close()
 		buffer, err := ioutil.ReadAll(reader)
 		return buffer, err
 	}
 	return ioutil.ReadAll(resp.Body)
 }
 
-func (c *Connection) HandleAPIError(response *http.Response, expectStatus int) error {
+func (c *Connection) HandleAPIError(response *http.Response, expectStatus int) (*utils.APIError, error) {
 	if response.StatusCode != expectStatus {
-		defer response.Body.Close()
 		buffer, err := inflateResponse(response)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		var errData *utils.APIError
 		if err = json.Unmarshal(buffer, &errData); err != nil {
-			return err
+			return nil, err
 		}
-		return fmt.Errorf("Error [%s]->(HTTP %d %s): %s",
-			c.Address, errData.HTTPStatus, http.StatusText(errData.HTTPStatus), errData.ErrorMessage)
+		return errData, nil
 	}
-	return nil
+	return nil, nil
 }
 
-func (c *Connection) Post(endpoint string, expectStatus int, data interface{}) ([]byte, error) {
-	request := c.ConstructPostRequest(endpoint, data)
+func (c *Connection) Post(endpoint string, expectStatus int, postData interface{}) *APIResult {
+	request := c.ConstructPostRequest(endpoint, postData)
 	response, err := c.client.Do(request)
 	if err != nil {
-		return nil, err
+		return NewAPIResult(err, nil, nil)
 	}
-	if err := c.HandleAPIError(response, expectStatus); err != nil {
-		return nil, err
+	apiErr, localErr := c.HandleAPIError(response, expectStatus)
+	if localErr != nil || apiErr != nil {
+		return NewAPIResult(err, apiErr, nil)
 	}
-	return inflateResponse(response)
+	data, err := inflateResponse(response)
+	if err != nil {
+		return NewAPIResult(err, nil, nil)
+	}
+	return NewAPIResult(nil, nil, data)
 }
 
-func (c *Connection) constructDevice(auth *options.Authorization) error {
+func (c *Connection) ConstructDevice(auth *options.Authorization) error {
 	hostname, err := os.Hostname()
 	if err != nil {
 		return err
@@ -126,7 +155,7 @@ func (c *Connection) constructDevice(auth *options.Authorization) error {
 	return nil
 }
 
-func (c *Connection) constructDeviceRegister(auth string) error {
+func (c *Connection) ConstructDeviceRegister(auth string) error {
 	hostname, err := os.Hostname()
 	if err != nil {
 		return err
@@ -138,36 +167,35 @@ func (c *Connection) constructDeviceRegister(auth string) error {
 	return nil
 }
 
-func (c *Connection) Register(authstr string) error {
-	err := c.constructDeviceRegister(authstr)
+func (c *Connection) Register(authstr string) *APIResult {
+	err := c.ConstructDeviceRegister(authstr)
 	if err != nil {
-		return err
+		return NewAPIResult(err, nil, nil)
 	}
-	response, err := c.Post("/register", http.StatusOK, &c.DeviceRegister)
-	if err != nil {
-		return err
+	result := c.Post("/register", http.StatusOK, &c.DeviceRegister)
+	if result.LocalErr != nil {
+		return result
 	}
 
 	var uuid string
-	if err := json.Unmarshal(response, &uuid); err != nil {
-		return err
+	if err := json.Unmarshal(result.Result, &uuid); err != nil {
+		return NewAPIResult(err, nil, nil)
 	}
 
 	if uuid == "" {
-		return fmt.Errorf("Did not get a UUID from the server")
+		return NewAPIResult(fmt.Errorf("Did not get a UUID from the server"), nil, nil)
 	}
 
 	auth := &options.Authorization{
 		UUID:    uuid,
 		AuthStr: authstr,
 	}
-	c.constructDevice(auth)
-	log.Println("Successfully registered with", c.Address)
-	return nil
+	c.ConstructDevice(auth)
+	return result
 }
 
 func (c *Connection) GetStatus(auth *options.Authorization) (bool, error) {
-	c.constructDevice(auth)
+	c.ConstructDevice(auth)
 	// We need to catch the http status code so we do this semi manually
 	request := c.ConstructPostRequest("/status", c.Device)
 	response, err := c.client.Do(request)
@@ -177,17 +205,14 @@ func (c *Connection) GetStatus(auth *options.Authorization) (bool, error) {
 	return true, nil
 }
 
-func (c *Connection) Login() error {
-	_, err := c.Post("/login", http.StatusOK, &c.Device)
-	return err
+func (c *Connection) Login() *APIResult {
+	return c.Post("/login", http.StatusOK, &c.Device)
 }
 
-func (c *Connection) Logout() error {
-	_, err := c.Post("/logout", http.StatusOK, &c.Device)
-	return err
+func (c *Connection) Logout() *APIResult {
+	return c.Post("/logout", http.StatusOK, &c.Device)
 }
 
-func (c *Connection) Ping() error {
-	_, err := c.Post("/ping", http.StatusOK, &c.Device)
-	return err
+func (c *Connection) Ping() *APIResult {
+	return c.Post("/ping", http.StatusOK, &c.Device)
 }
