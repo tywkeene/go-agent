@@ -3,8 +3,8 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	_ "github.com/go-sql-driver/mysql"
-	"log"
 	"time"
 
 	"github.com/tywkeene/go-tracker/cmd/server/options"
@@ -33,15 +33,6 @@ var ErrAuthStringInvalid = fmt.Errorf("invalid device authorization string")
 
 var ErrDeviceWithHostnameExists = fmt.Errorf("a device with that hostname already registered with this server")
 var ErrUnauthorizedDevice = fmt.Errorf("unknown or unauthorized device")
-
-// We don't want to leak raw mysql errors to the client, instead we do
-// if err != nil {
-//     log.Println(err)
-//     return ErrDatabaseError
-// }
-// The actual error gets logged on the server side, and the
-// client only knows there was *some* database error.
-// TODO: should probably find a more pragmatic way of dealing with these errors
 var ErrDatabaseError = fmt.Errorf("internal database error")
 
 // Queries dealing with devices
@@ -58,18 +49,24 @@ const InsertRegisterAuthStmt = "INSERT INTO register_auths SET auth_string=?,use
 const ValidateRegisterAuthStmt = "SELECT auth_string,used,timestamp,expire_timestamp FROM register_auths WHERE auth_string=?;"
 const SetRegisterAuthUsedStmt = "UPDATE register_auths SET used=? WHERE auth_string=? ;"
 
+func logDBError(err error) {
+	if options.Config.DebugDB == true {
+		log.Errorf("Database error: %s", err.Error())
+	}
+}
+
 func GetRegisterAuthCount() (int, error) {
 	rows, err := DBConnection.Query(RegisterAuthCount)
 	defer rows.Close()
 	if err != nil {
-		log.Println(err)
+		logDBError(err)
 		return 0, ErrDatabaseError
 	}
 	rows.Next()
 	var rowCount int
 	err = rows.Scan(&rowCount)
 	if err != nil {
-		log.Println(err)
+		logDBError(err)
 		return 0, ErrDatabaseError
 	}
 	return rowCount, nil
@@ -78,12 +75,12 @@ func GetRegisterAuthCount() (int, error) {
 func InsertRegisterAuth(str string, used bool, timestamp int64, expire int64) error {
 	stmt, err := DBConnection.Prepare(InsertRegisterAuthStmt)
 	if err != nil {
-		log.Println(err)
+		logDBError(err)
 		return ErrDatabaseError
 	}
 	_, err = stmt.Exec(str, used, timestamp, expire)
 	if err != nil {
-		log.Println(err)
+		logDBError(err)
 		return ErrDatabaseError
 	}
 	return nil
@@ -100,7 +97,7 @@ func IsAuthValid(authStr string) (bool, error) {
 	if err == sql.ErrNoRows {
 		return false, nil
 	} else if err != nil {
-		log.Println(err)
+		logDBError(err)
 		return false, ErrDatabaseError
 	}
 
@@ -117,7 +114,7 @@ func IsAuthValid(authStr string) (bool, error) {
 func SetAuthUsed(authStr string, used bool) error {
 	stmt, err := DBConnection.Prepare(SetRegisterAuthUsedStmt)
 	if err != nil {
-		log.Println(err)
+		logDBError(err)
 		return ErrDatabaseError
 	}
 	_, err = stmt.Exec(used, authStr)
@@ -131,7 +128,7 @@ func RowExists(stmt string, args ...interface{}) (bool, error) {
 	if err == sql.ErrNoRows {
 		return false, nil
 	} else if err != nil {
-		log.Println(err)
+		logDBError(err)
 		return false, ErrDatabaseError
 	}
 	return true, nil
@@ -144,10 +141,10 @@ func AuthorizeDevice(device *Device) (bool, error) {
 	err := DBConnection.QueryRow(AuthorizeDeviceStmt,
 		device.Hostname, device.UUID, device.AuthStr).Scan(&hostname, &uuid, &auth)
 	if err != nil && err == sql.ErrNoRows {
-		log.Println(err)
+		logDBError(err)
 		return false, ErrUnauthorizedDevice
 	} else if err != nil {
-		log.Println(err)
+		logDBError(err)
 		return false, ErrDatabaseError
 	}
 	return true, nil
@@ -156,7 +153,7 @@ func AuthorizeDevice(device *Device) (bool, error) {
 func HandleRegister(device *Device) error {
 	exists, err := RowExists(DeviceByHostStmt, device.Hostname)
 	if err != nil {
-		log.Println(err)
+		logDBError(err)
 		return ErrDatabaseError
 	}
 	if exists == true {
@@ -164,7 +161,7 @@ func HandleRegister(device *Device) error {
 	}
 	stmt, err := DBConnection.Prepare(RegisterStmt)
 	if err != nil {
-		log.Println(err)
+		logDBError(err)
 		return ErrDatabaseError
 	}
 	_, err = stmt.Exec(device.UUID, device.Address, device.AuthStr, device.Hostname, device.Online)
@@ -175,7 +172,7 @@ func IsDeviceOnline(device *Device) (bool, error) {
 	var online bool
 	err := DBConnection.QueryRow(GetDeviceStatusStmt, device.UUID).Scan(&online)
 	if err == sql.ErrNoRows || err != nil {
-		log.Println(err)
+		logDBError(err)
 		return false, ErrDatabaseError
 	}
 	return online, nil
@@ -196,7 +193,7 @@ func HandleLogin(device *Device) error {
 		return err
 	}
 	if err := SetDeviceOnlineStatus(device, true); err != nil {
-		log.Println(err)
+		logDBError(err)
 		return ErrDatabaseError
 	}
 	return err
@@ -208,7 +205,7 @@ func HandleLogoff(device *Device) error {
 		return err
 	}
 	if err := SetDeviceOnlineStatus(device, false); err != nil {
-		log.Println(err)
+		logDBError(err)
 		return ErrDatabaseError
 	}
 	return nil
@@ -226,13 +223,13 @@ func HandlePing(device *Device) error {
 	}
 	_, err = stmt.Exec(timestamp, device.Hostname, device.UUID, device.AuthStr)
 	if err != nil {
-		log.Println(err)
+		logDBError(err)
 		return ErrDatabaseError
 	}
 
 	online, err := IsDeviceOnline(device)
 	if err != nil {
-		log.Println(err)
+		logDBError(err)
 		return ErrDatabaseError
 	}
 	if online == false {
@@ -242,7 +239,7 @@ func HandlePing(device *Device) error {
 		}
 		_, err = stmt.Exec(true, device.Hostname, device.UUID, device.AuthStr)
 		if err != nil {
-			log.Println(err)
+			logDBError(err)
 			return ErrDatabaseError
 		}
 	}

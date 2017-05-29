@@ -2,16 +2,18 @@ package options
 
 import (
 	"flag"
+	"fmt"
 	"github.com/BurntSushi/toml"
 	"github.com/tywkeene/go-tracker/version"
 	"os"
 )
 
 type Configuration struct {
-	Addr string `toml:"address"`
-	Name string `toml:"name"`
-	User string `toml:"user"`
-	Pass string `toml:"pass"`
+	Addr    string `toml:"address"`
+	Name    string `toml:"name"`
+	User    string `toml:"user"`
+	Pass    string `toml:"pass"`
+	DebugDB bool   `toml:"debug_db"`
 }
 
 var Config Configuration
@@ -29,6 +31,9 @@ func ReadConfig() {
 	}
 	if _, err := toml.DecodeFile(*configFile, &Config); err != nil {
 		panic(err)
+	}
+	if Config.DebugDB == true {
+		fmt.Println("Will print database debug messages")
 	}
 	if Config.Addr == "" || Config.Name == "" ||
 		Config.User == "" || Config.Pass == "" {

@@ -4,8 +4,8 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -43,7 +43,7 @@ func GzipHandler(fn http.HandlerFunc) http.HandlerFunc {
 }
 
 func LogHttp(r *http.Request) {
-	log.Printf("%s %s %s %s", r.Method, r.URL, r.RemoteAddr, r.UserAgent())
+	log.Infof("%s %s %s %s", r.Method, r.URL, r.RemoteAddr, r.UserAgent())
 }
 
 //Checks a request header and ensures it is allowed, otherwise it will set the Allow http header
@@ -108,7 +108,7 @@ func registerHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Hostname '%s' successfully registered (authstr:%s) (uuid:%s)",
+	log.Infof("Hostname '%s' successfully registered (authstr:%s) (uuid:%s)",
 		device.Hostname, registerAuth.AuthStr, device.UUID)
 
 	defer r.Body.Close()
@@ -131,7 +131,7 @@ func loginHandle(w http.ResponseWriter, r *http.Request) {
 
 	online, err := db.IsDeviceOnline(device)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		errHandle.Handle(fmt.Errorf("error getting device status"),
 			http.StatusInternalServerError, utils.ErrorActionErr)
 		return
@@ -147,7 +147,7 @@ func loginHandle(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 	utils.SetResponseHeaders(w, http.StatusOK)
-	log.Printf("Device '%s' logged in [authstr:%s] [uuid:%s]",
+	log.Infof("Device '%s' logged in [authstr:%s] [uuid:%s]",
 		device.Hostname, device.AuthStr, device.UUID)
 }
 
@@ -166,7 +166,7 @@ func logoffHandle(w http.ResponseWriter, r *http.Request) {
 
 	online, err := db.IsDeviceOnline(device)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		errHandle.Handle(fmt.Errorf("error getting device status"),
 			http.StatusInternalServerError, utils.ErrorActionErr)
 		return
@@ -182,7 +182,7 @@ func logoffHandle(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 	utils.SetResponseHeaders(w, http.StatusOK)
-	log.Printf("Device '%s' logged off [authstr:%s] [uuid:%s]",
+	log.Infof("Device '%s' logged off [authstr:%s] [uuid:%s]",
 		device.Hostname, device.AuthStr, device.UUID)
 }
 
@@ -206,7 +206,7 @@ func pingHandle(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 	utils.SetResponseHeaders(w, http.StatusOK)
-	log.Printf("Device '%s' has pinged [authstr:%s] [uuid:%s]",
+	log.Infof("Device '%s' has pinged [authstr:%s] [uuid:%s]",
 		device.Hostname, device.AuthStr, device.UUID)
 }
 
@@ -225,7 +225,7 @@ func statusHandle(w http.ResponseWriter, r *http.Request) {
 
 	registered, err := db.AuthorizeDevice(device)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 	}
 
 	if registered == false {
@@ -236,7 +236,7 @@ func statusHandle(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 	utils.SetResponseHeaders(w, http.StatusOK)
-	log.Printf("Device '%s' has sent a status check [authstr:%s] [uuid:%s]",
+	log.Infof("Device '%s' has sent a status check [authstr:%s] [uuid:%s]",
 		device.Hostname, device.AuthStr, device.UUID)
 	return
 }

@@ -84,3 +84,8 @@ Refactored routes.go
 Moved/renamed setDefaultResponseHeaders to utils/SetResponseHeaders
 Added scripts/test directory, moved test.sh from scripts/build to scripts/test
 Added scripts/test/mock_client.sh
+
+## Sun 28 May 2017 11:56:09 PM MDT Version: 0.0.23
+Migrate to using the logrus package in the server binary
+Added debug_db configuration option
+Added LogDBError

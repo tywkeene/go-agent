@@ -1,21 +1,22 @@
 package main
 
 import (
+	log "github.com/Sirupsen/logrus"
+	"time"
+
 	"github.com/tywkeene/go-tracker/cmd/server/auth"
 	"github.com/tywkeene/go-tracker/cmd/server/db"
 	"github.com/tywkeene/go-tracker/cmd/server/options"
 	"github.com/tywkeene/go-tracker/cmd/server/routes"
-	"log"
-	"time"
 )
 
 func init() {
 	options.ReadConfig()
-	log.Println("Starting tracker server...")
+	log.Infof("Starting tracker server...")
 	if err := db.Init(); err != nil {
 		panic(err)
 	}
-	log.Printf("Initialized database connection %s...", options.Config.Addr)
+	log.Infof("Initialized database connection %s...", options.Config.Addr)
 
 	expire, err := time.ParseDuration("24h")
 	if err != nil {

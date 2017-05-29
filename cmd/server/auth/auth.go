@@ -2,7 +2,7 @@ package auth
 
 import (
 	"fmt"
-	"log"
+	log "github.com/Sirupsen/logrus"
 	"math/rand"
 	"time"
 
@@ -24,7 +24,7 @@ func Init(num int, expire time.Duration) error {
 		return err
 	}
 	if authCount == 0 {
-		log.Printf("Generating %d registration authorizations", num)
+		log.Infof("Generating %d registration authorizations", num)
 		for i := 0; i < num; i++ {
 			auth := NewRegisterAuth(expire)
 			err := db.InsertRegisterAuth(auth.Str, auth.Used, auth.Timestamp, auth.ExpireTimestamp)
