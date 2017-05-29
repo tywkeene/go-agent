@@ -6,12 +6,35 @@ export CGO_ENABLED=0
 export GOOS=linux
 export GOARCH=amd64
 
-echo "Building go-tracker server binary..."
-go build -v -o tracker-server \
-    -ldflags "-X github.com/tywkeene/go-tracker/cmd/server/version.Version=$VERSION -X github.com/tywkeene/go-tracker/cmd/server/version.CommitHash=$COMMIT" \
-    github.com/tywkeene/go-tracker/cmd/server
 
-echo "Building go-tracker client binary..."
-go build -v -o tracker-client \
-    -ldflags "-X github.com/tywkeene/go-tracker/cmd/client/version.Version=$VERSION -X github.com/tywkeene/go-tracker/cmd/client/version.CommitHash=$COMMIT" \
-    github.com/tywkeene/go-tracker/cmd/client 
+function build(){
+    echo "Building go-tracker $1 binary..."
+    rm -f tracker-$1
+    go build -v -o tracker-$1 \
+        -ldflags "-X github.com/tywkeene/go-tracker/version.Version=$VERSION \
+        -X github.com/tywkeene/go-tracker/version.CommitHash=$COMMIT" \
+        github.com/tywkeene/go-tracker/cmd/$1
+}
+
+function usage(){
+    printf "Usage:\n$0 -c <build client binary>\n$0 -s <build server binary>\n$0 -a <build all binaries>\n"
+}
+
+if [ -z "$1" ]; then
+    usage
+    exit -1
+fi
+
+while getopts "cash" opt; do
+    case "$opt" in
+        h) usage
+            ;;
+        c) build "client"
+            ;;
+        s) build "server"
+            ;;
+        a) build "server"
+            build "client"
+            ;;
+    esac
+done

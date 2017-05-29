@@ -13,4 +13,4 @@ fi
 glide up
 
 #build!
-bash ./scripts/build/build.sh
+bash ./scripts/build/build.sh -a

@@ -13,7 +13,7 @@ import (
 	"os"
 
 	"github.com/tywkeene/go-tracker/cmd/client/options"
-	"github.com/tywkeene/go-tracker/cmd/client/version"
+	"github.com/tywkeene/go-tracker/version"
 
 	"github.com/tywkeene/go-tracker/cmd/server/db"
 	"github.com/tywkeene/go-tracker/cmd/server/utils"

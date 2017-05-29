@@ -3,7 +3,7 @@ package options
 import (
 	"flag"
 	"github.com/BurntSushi/toml"
-	"github.com/tywkeene/go-tracker/cmd/server/version"
+	"github.com/tywkeene/go-tracker/version"
 	"os"
 )
 

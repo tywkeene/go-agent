@@ -73,3 +73,8 @@ Updated db.go/AuthorizeDevice() to just return ErrAUnauthorizedDevice
 ## Sun 28 May 2017 04:13:00 PM MDT Version: 0.0.20
 Wrote the bulk of the client's logic, registering, logging in and pinging
 Added -register flag to client
+
+## Sun 28 May 2017 06:18:56 PM MDT Version: 0.0.21
+Moved cmd/{client,server}/version to root of directory, making botch packages use the same version package
+Updated build script to be less redundant
+Updated setup script to work with new build script
