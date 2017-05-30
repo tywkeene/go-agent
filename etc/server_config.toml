@@ -1,7 +1,13 @@
-# Default database settings
-
+#Boilerplate database stuff
 [database]
     address = "0.0.0.0:3306"
     name = "agent"
     user = "agent"
     pass = "agent"
+    debug = true
+
+[server]
+#How many registration authorization strings to generate
+    register_auth_count = 10
+#How long registration authorizations are valid
+    register_auth_expire = "24h"

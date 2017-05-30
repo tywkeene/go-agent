@@ -106,3 +106,12 @@ Added ping_interval to client config
 ## Mon 29 May 2017 06:16:44 PM MDT Version: 0.0.28
 Use nested configuration for database and general server configuration
 Renamed etc/config.toml to etc/server_config.toml
+
+## Mon 29 May 2017 06:33:42 PM MDT Version: 0.0.29
+Added [server] section to etc/server_config.toml for general server configuration options
+
+Added register_auth_count to server config section. This option dictates how many registration authorizations 
+the server should generate if there are none in the database at server boot up
+
+Added register_auth_expire to server config section. This option dictates how long a client has to use a registration
+string before it expires and can no longer be used to register a device

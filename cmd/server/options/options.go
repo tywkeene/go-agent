@@ -2,8 +2,8 @@ package options
 
 import (
 	"flag"
-	"fmt"
 	"github.com/BurntSushi/toml"
+	log "github.com/Sirupsen/logrus"
 	"github.com/tywkeene/go-agent/version"
 	"os"
 )
@@ -16,8 +16,14 @@ type DBConfig struct {
 	Debug bool   `toml:"debug"`
 }
 
+type ServerConfig struct {
+	RegisterAuthExpire string `toml:"register_auth_expire"`
+	RegisterAuthCount  int    `toml:"register_auth_count"`
+}
+
 type Configuration struct {
-	Database DBConfig `toml:"database"`
+	Database DBConfig     `toml:"database"`
+	Server   ServerConfig `toml:"server"`
 }
 
 var Config Configuration
@@ -37,7 +43,7 @@ func ReadConfig() {
 		panic(err)
 	}
 	if Config.Database.Debug == true {
-		fmt.Println("Will print database debug messages")
+		log.Infof("Will print database debug messages")
 	}
 	if Config.Database.Addr == "" || Config.Database.Name == "" ||
 		Config.Database.User == "" || Config.Database.Pass == "" {

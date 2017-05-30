@@ -16,13 +16,16 @@ func init() {
 	if err := db.Init(); err != nil {
 		panic(err)
 	}
-	log.Infof("Initialized database connection %s...", options.Config.Database.Addr)
+	dbConfig := options.Config.Database
+	serverConfig := options.Config.Server
 
-	expire, err := time.ParseDuration("24h")
+	log.Infof("Initialized database connection %s...", dbConfig.Addr)
+
+	expire, err := time.ParseDuration(serverConfig.RegisterAuthExpire)
 	if err != nil {
 		panic(err)
 	}
-	if err := auth.Init(10, expire); err != nil {
+	if err := auth.Init(serverConfig.RegisterAuthCount, expire); err != nil {
 		panic(err)
 	}
 	routes.RegisterHandles()
