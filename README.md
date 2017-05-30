@@ -24,3 +24,10 @@ All of this would be done via hook scripts run by go-agent in response to device
 
 This is just one of the many possible use cases of Go-Agent, and it's really up to you, and since you have access to your shell
 or scripting language of choice.
+
+## So how do I get and run it?
+More on that coming soon, since Go-Agent is still under heavy development
+
+Feel free to contact me with any questions, comments or suggestions or if you would like to contribute to the project.
+
+Cheers.
