@@ -19,6 +19,7 @@ type DBConfig struct {
 type ServerConfig struct {
 	RegisterAuthExpire string `toml:"register_auth_expire"`
 	RegisterAuthCount  int    `toml:"register_auth_count"`
+	LogToSystemd       bool   `toml:"systemd_logging"`
 }
 
 type Configuration struct {

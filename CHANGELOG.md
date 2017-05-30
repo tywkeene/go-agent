@@ -115,3 +115,7 @@ the server should generate if there are none in the database at server boot up
 
 Added register_auth_expire to server config section. This option dictates how long a client has to use a registration
 string before it expires and can no longer be used to register a device
+
+## Mon 29 May 2017 07:05:03 PM MDT Version: 0.0.30
+Added logging to systemd journal
+Added systemd_logging to etc/server_config.toml to enable/disable systemd journal logging

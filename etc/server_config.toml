@@ -11,3 +11,5 @@
     register_auth_count = 10
 #How long registration authorizations are valid
     register_auth_expire = "24h"
+#Enable or disable logging to systemd
+    systemd_logging = true
