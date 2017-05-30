@@ -102,3 +102,7 @@ Rename to go-agent
 
 ## Mon 29 May 2017 05:18:39 PM MDT Version: 0.0.27
 Added ping_interval to client config
+
+## Mon 29 May 2017 06:16:44 PM MDT Version: 0.0.28
+Use nested configuration for database and general server configuration
+Renamed etc/config.toml to etc/server_config.toml

@@ -16,7 +16,7 @@ func init() {
 	if err := db.Init(); err != nil {
 		panic(err)
 	}
-	log.Infof("Initialized database connection %s...", options.Config.Addr)
+	log.Infof("Initialized database connection %s...", options.Config.Database.Addr)
 
 	expire, err := time.ParseDuration("24h")
 	if err != nil {

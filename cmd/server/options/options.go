@@ -8,12 +8,16 @@ import (
 	"os"
 )
 
+type DBConfig struct {
+	Addr  string `toml:"address"`
+	Name  string `toml:"name"`
+	User  string `toml:"user"`
+	Pass  string `toml:"pass"`
+	Debug bool   `toml:"debug"`
+}
+
 type Configuration struct {
-	Addr    string `toml:"address"`
-	Name    string `toml:"name"`
-	User    string `toml:"user"`
-	Pass    string `toml:"pass"`
-	DebugDB bool   `toml:"debug_db"`
+	Database DBConfig `toml:"database"`
 }
 
 var Config Configuration
@@ -32,11 +36,11 @@ func ReadConfig() {
 	if _, err := toml.DecodeFile(*configFile, &Config); err != nil {
 		panic(err)
 	}
-	if Config.DebugDB == true {
+	if Config.Database.Debug == true {
 		fmt.Println("Will print database debug messages")
 	}
-	if Config.Addr == "" || Config.Name == "" ||
-		Config.User == "" || Config.Pass == "" {
+	if Config.Database.Addr == "" || Config.Database.Name == "" ||
+		Config.Database.User == "" || Config.Database.Pass == "" {
 		panic("Invalid database configuration")
 	}
 }

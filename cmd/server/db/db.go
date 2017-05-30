@@ -50,7 +50,7 @@ const ValidateRegisterAuthStmt = "SELECT auth_string,used,timestamp,expire_times
 const SetRegisterAuthUsedStmt = "UPDATE register_auths SET used=? WHERE auth_string=? ;"
 
 func logDBError(err error) {
-	if options.Config.DebugDB == true {
+	if options.Config.Database.Debug == true {
 		log.Errorf("Database error: %s", err.Error())
 	}
 }
@@ -248,7 +248,7 @@ func HandlePing(device *Device) error {
 
 func Init() error {
 	var err error
-	dbOptions := options.Config
+	dbOptions := options.Config.Database
 	DBConnection, err = sql.Open("mysql", dbOptions.User+":"+dbOptions.Pass+"@tcp("+dbOptions.Addr+")/"+dbOptions.Name)
 	return err
 }

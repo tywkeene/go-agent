@@ -1,5 +1,0 @@
-# Default database settings
-address = "0.0.0.0:3306"
-name = "agent"
-user = "agent"
-pass = "agent"
