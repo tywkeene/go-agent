@@ -6,3 +6,4 @@ agent-client
 glide.lock
 etc/secret_config.toml
 etc/auth.toml
+vendor
