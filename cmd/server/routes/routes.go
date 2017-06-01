@@ -12,6 +12,7 @@ import (
 
 	"github.com/tywkeene/go-agent/cmd/server/auth"
 	"github.com/tywkeene/go-agent/cmd/server/db"
+	"github.com/tywkeene/go-agent/cmd/server/options"
 	"github.com/tywkeene/go-agent/cmd/server/utils"
 
 	"github.com/satori/go.uuid"
@@ -243,7 +244,7 @@ func statusHandle(w http.ResponseWriter, r *http.Request) {
 }
 
 func RegisterHandles() {
-	http.HandleFunc("/register", registerHandle)
+	http.HandleFunc("/register", GzipHandler(registerHandle))
 	http.HandleFunc("/ping", GzipHandler(pingHandle))
 	http.HandleFunc("/login", GzipHandler(loginHandle))
 	http.HandleFunc("/logoff", GzipHandler(logoffHandle))
@@ -251,5 +252,6 @@ func RegisterHandles() {
 }
 
 func Launch() {
-	panic(http.ListenAndServe(":8080", nil))
+	serverOptions := options.Config.Server
+	panic(http.ListenAndServeTLS(":"+serverOptions.Port, serverOptions.SSLCert, serverOptions.SSLKey, nil))
 }

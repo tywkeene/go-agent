@@ -119,3 +119,6 @@ string before it expires and can no longer be used to register a device
 ## Mon 29 May 2017 07:05:03 PM MDT Version: 0.0.30
 Added logging to systemd journal
 Added systemd_logging to etc/server_config.toml to enable/disable systemd journal logging
+
+## Thu 01 Jun 2017 04:53:25 PM MDT Version: 0.0.31
+Added ssl_key_path, ssl_cert_path and listen_port to etc/server_config.toml

@@ -13,3 +13,9 @@
     register_auth_expire = "24h"
 #Enable or disable logging to systemd
     systemd_logging = true
+#SSL Key path to use for https connections
+    ssl_key_path = "./secret/key.pem"
+#SSL Cert path to use for https connections
+    ssl_cert_path = "./secret/cert.crt"
+#Port for the api to listen on
+    listen_port = "8080"

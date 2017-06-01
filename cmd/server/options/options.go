@@ -20,6 +20,9 @@ type ServerConfig struct {
 	RegisterAuthExpire string `toml:"register_auth_expire"`
 	RegisterAuthCount  int    `toml:"register_auth_count"`
 	LogToSystemd       bool   `toml:"systemd_logging"`
+	SSLKey             string `toml:"ssl_key_path"`
+	SSLCert            string `toml:"ssl_cert_path"`
+	Port               string `toml:"listen_port"`
 }
 
 type Configuration struct {
