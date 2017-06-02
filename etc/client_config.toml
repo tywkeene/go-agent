@@ -1,5 +1,5 @@
 #The address of the agent-server
-server_address = "http://0.0.0.0:8080"
+server_address = "https://0.0.0.0:8080"
 
 #Where to store the agent-client's uuid and auth string
 auth_file = "etc/auth.toml"

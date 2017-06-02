@@ -122,3 +122,8 @@ Added systemd_logging to etc/server_config.toml to enable/disable systemd journa
 
 ## Thu 01 Jun 2017 04:53:25 PM MDT Version: 0.0.31
 Added ssl_key_path, ssl_cert_path and listen_port to etc/server_config.toml
+
+## Fri 02 Jun 2017 12:45:06 PM MDT Version: 0.0.32
+Added scripts/build/gen_tls.sh to generate key/certificate for agent-server
+Refactored cmd/client/main.go to be a little more modular
+Updated etc/client_config.toml and etc/server_config.toml
