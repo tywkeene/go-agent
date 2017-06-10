@@ -130,3 +130,6 @@ Updated etc/client_config.toml and etc/server_config.toml
 
 ## Fri 09 Jun 2017 07:48:59 PM MDT Version: 0.0.33
 Removed some dead code in cmd/server/utils
+
+## Sat 10 Jun 2017 04:56:02 PM MDT Version: 0.0.34
+Make sure http response bodys get closed in all api endpoint handler

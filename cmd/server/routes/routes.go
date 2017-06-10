@@ -76,6 +76,7 @@ func GetQueryValue(name string, w http.ResponseWriter, r *http.Request) (string,
 
 func registerHandle(w http.ResponseWriter, r *http.Request) {
 	LogHttp(r)
+	defer r.Body.Close()
 	errHandle := utils.NewHttpErrorHandle("registerHandle", w, r)
 	if validateRequestMethod(errHandle, "POST") == false {
 		return
@@ -115,14 +116,13 @@ func registerHandle(w http.ResponseWriter, r *http.Request) {
 
 	log.Infof("Hostname '%s' successfully registered (authstr:%s) (uuid:%s)",
 		device.Hostname, registerAuth.AuthStr, device.UUID)
-
-	defer r.Body.Close()
 	utils.SetResponseHeaders(w, http.StatusOK)
 	io.WriteString(w, string(uuidJson))
 }
 
 func loginHandle(w http.ResponseWriter, r *http.Request) {
 	LogHttp(r)
+	defer r.Body.Close()
 	errHandle := utils.NewHttpErrorHandle("loginHandle", w, r)
 	if validateRequestMethod(errHandle, "POST") == false {
 		return
@@ -149,7 +149,6 @@ func loginHandle(w http.ResponseWriter, r *http.Request) {
 	if errHandle.Handle(err, http.StatusUnauthorized, utils.ErrorActionErr) == true {
 		return
 	}
-	defer r.Body.Close()
 	utils.SetResponseHeaders(w, http.StatusOK)
 	log.Infof("Device '%s' logged in [authstr:%s] [uuid:%s]",
 		device.Hostname, device.AuthStr, device.UUID)
@@ -157,6 +156,7 @@ func loginHandle(w http.ResponseWriter, r *http.Request) {
 
 func logoffHandle(w http.ResponseWriter, r *http.Request) {
 	LogHttp(r)
+	defer r.Body.Close()
 	errHandle := utils.NewHttpErrorHandle("logoffHandle", w, r)
 	if validateRequestMethod(errHandle, "POST") == false {
 		return
@@ -183,7 +183,6 @@ func logoffHandle(w http.ResponseWriter, r *http.Request) {
 	if errHandle.Handle(err, http.StatusUnauthorized, utils.ErrorActionErr) == true {
 		return
 	}
-	defer r.Body.Close()
 	utils.SetResponseHeaders(w, http.StatusOK)
 	log.Infof("Device '%s' logged off [authstr:%s] [uuid:%s]",
 		device.Hostname, device.AuthStr, device.UUID)
@@ -191,6 +190,7 @@ func logoffHandle(w http.ResponseWriter, r *http.Request) {
 
 func pingHandle(w http.ResponseWriter, r *http.Request) {
 	LogHttp(r)
+	defer r.Body.Close()
 	errHandle := utils.NewHttpErrorHandle("pingHandle", w, r)
 	if validateRequestMethod(errHandle, "POST") == false {
 		return
@@ -206,8 +206,6 @@ func pingHandle(w http.ResponseWriter, r *http.Request) {
 	if errHandle.Handle(err, http.StatusInternalServerError, utils.ErrorActionErr) == true {
 		return
 	}
-
-	defer r.Body.Close()
 	utils.SetResponseHeaders(w, http.StatusOK)
 	log.Infof("Device '%s' has pinged [authstr:%s] [uuid:%s]",
 		device.Hostname, device.AuthStr, device.UUID)
@@ -215,6 +213,7 @@ func pingHandle(w http.ResponseWriter, r *http.Request) {
 
 func statusHandle(w http.ResponseWriter, r *http.Request) {
 	LogHttp(r)
+	defer r.Body.Close()
 	errHandle := utils.NewHttpErrorHandle("statusHandle", w, r)
 	if validateRequestMethod(errHandle, "POST") == false {
 		return
@@ -235,8 +234,6 @@ func statusHandle(w http.ResponseWriter, r *http.Request) {
 		errHandle.Handle(db.ErrUnauthorizedDevice, http.StatusUnauthorized, utils.ErrorActionErr)
 		return
 	}
-
-	defer r.Body.Close()
 	utils.SetResponseHeaders(w, http.StatusOK)
 	log.Infof("Device '%s' has sent a status check [authstr:%s] [uuid:%s]",
 		device.Hostname, device.AuthStr, device.UUID)
