@@ -19,3 +19,5 @@
     ssl_cert_path = "ssl/cert.crt"
 #Port for the api to listen on
     listen_port = "8080"
+#Enable logging of time elapsed in API calls
+    timetrack_api = true

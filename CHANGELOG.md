@@ -133,3 +133,7 @@ Removed some dead code in cmd/server/utils
 
 ## Sat 10 Jun 2017 04:56:02 PM MDT Version: 0.0.34
 Make sure http response bodys get closed in all api endpoint handler
+
+## Sat 10 Jun 2017 05:05:42 PM MDT Version: 0.0.35
+Added timetrack to all api endpoints
+Added timetrack_api option to server configuration

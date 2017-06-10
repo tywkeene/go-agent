@@ -4,17 +4,18 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/tywkeene/go-agent/cmd/server/auth"
 	"github.com/tywkeene/go-agent/cmd/server/db"
 	"github.com/tywkeene/go-agent/cmd/server/options"
 	"github.com/tywkeene/go-agent/cmd/server/utils"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/satori/go.uuid"
 )
 
@@ -74,9 +75,18 @@ func GetQueryValue(name string, w http.ResponseWriter, r *http.Request) (string,
 	return query.Get(name), nil
 }
 
+// This is neat: https://coderwall.com/p/cp5fya/measuring-execution-time-in-go
+func timeTrack(start time.Time, name string) {
+	if options.Config.Server.TimetrackAPI == true {
+		elapsed := time.Since(start)
+		log.Infof("%s took %s", name, elapsed)
+	}
+}
+
 func registerHandle(w http.ResponseWriter, r *http.Request) {
 	LogHttp(r)
 	defer r.Body.Close()
+	defer timeTrack(time.Now(), "registerHandle")
 	errHandle := utils.NewHttpErrorHandle("registerHandle", w, r)
 	if validateRequestMethod(errHandle, "POST") == false {
 		return
@@ -123,6 +133,7 @@ func registerHandle(w http.ResponseWriter, r *http.Request) {
 func loginHandle(w http.ResponseWriter, r *http.Request) {
 	LogHttp(r)
 	defer r.Body.Close()
+	defer timeTrack(time.Now(), "loginHandle")
 	errHandle := utils.NewHttpErrorHandle("loginHandle", w, r)
 	if validateRequestMethod(errHandle, "POST") == false {
 		return
@@ -157,6 +168,7 @@ func loginHandle(w http.ResponseWriter, r *http.Request) {
 func logoffHandle(w http.ResponseWriter, r *http.Request) {
 	LogHttp(r)
 	defer r.Body.Close()
+	defer timeTrack(time.Now(), "logoffHandle")
 	errHandle := utils.NewHttpErrorHandle("logoffHandle", w, r)
 	if validateRequestMethod(errHandle, "POST") == false {
 		return
@@ -191,6 +203,7 @@ func logoffHandle(w http.ResponseWriter, r *http.Request) {
 func pingHandle(w http.ResponseWriter, r *http.Request) {
 	LogHttp(r)
 	defer r.Body.Close()
+	defer timeTrack(time.Now(), "pingHandle")
 	errHandle := utils.NewHttpErrorHandle("pingHandle", w, r)
 	if validateRequestMethod(errHandle, "POST") == false {
 		return
@@ -214,6 +227,7 @@ func pingHandle(w http.ResponseWriter, r *http.Request) {
 func statusHandle(w http.ResponseWriter, r *http.Request) {
 	LogHttp(r)
 	defer r.Body.Close()
+	defer timeTrack(time.Now(), "statusHandle")
 	errHandle := utils.NewHttpErrorHandle("statusHandle", w, r)
 	if validateRequestMethod(errHandle, "POST") == false {
 		return

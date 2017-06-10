@@ -23,6 +23,7 @@ type ServerConfig struct {
 	SSLKey             string `toml:"ssl_key_path"`
 	SSLCert            string `toml:"ssl_cert_path"`
 	Port               string `toml:"listen_port"`
+	TimetrackAPI       bool   `toml:"timetrack_api"`
 }
 
 type Configuration struct {
