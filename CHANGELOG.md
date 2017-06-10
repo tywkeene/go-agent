@@ -127,3 +127,6 @@ Added ssl_key_path, ssl_cert_path and listen_port to etc/server_config.toml
 Added scripts/build/gen_tls.sh to generate key/certificate for agent-server
 Refactored cmd/client/main.go to be a little more modular
 Updated etc/client_config.toml and etc/server_config.toml
+
+## Fri 09 Jun 2017 07:48:59 PM MDT Version: 0.0.33
+Removed some dead code in cmd/server/utils

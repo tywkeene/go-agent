@@ -2,12 +2,12 @@ package utils
 
 import (
 	"encoding/json"
-	log "github.com/Sirupsen/logrus"
 	"io"
 	"net/http"
-	"os"
 	"path"
 	"runtime"
+
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/tywkeene/go-agent/version"
 )
@@ -90,14 +90,4 @@ func HandleError(err error, action int) bool {
 		}
 	}
 	return (err != nil)
-}
-
-func WriteFile(filename string, source io.Reader) error {
-	writer, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	defer writer.Close()
-	io.Copy(writer, source)
-	return nil
 }
